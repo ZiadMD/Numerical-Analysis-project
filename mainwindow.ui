@@ -1,0 +1,1025 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1075</width>
+    <height>686</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>800</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>umerical Analysis</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../../../../Downloads/image-removebg-preview (1).png</normaloff>../../../../Downloads/image-removebg-preview (1).png</iconset>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QStackedWidget" name="Pages">
+    <property name="geometry">
+     <rect>
+      <x>200</x>
+      <y>50</y>
+      <width>871</width>
+      <height>591</height>
+     </rect>
+    </property>
+    <property name="currentIndex">
+     <number>1</number>
+    </property>
+    <widget class="QWidget" name="RootPage">
+     <widget class="QGroupBox" name="groupBox_2">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>831</width>
+        <height>131</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Input</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
+      <widget class="QLabel" name="label_2">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>30</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Enter F(x):</string>
+       </property>
+       <property name="indent">
+        <number>8</number>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="RootEQInput">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>30</y>
+         <width>501</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="placeholderText">
+        <string>e.g., x^2 - 2*x - 4</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="RootSolveButton">
+       <property name="geometry">
+        <rect>
+         <x>460</x>
+         <y>80</y>
+         <width>131</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="autoFillBackground">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Solve</string>
+       </property>
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="default">
+        <bool>false</bool>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_8">
+       <property name="geometry">
+        <rect>
+         <x>600</x>
+         <y>20</y>
+         <width>221</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Method</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QComboBox" name="MethodSelector">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>201</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="frame">
+         <bool>true</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>----</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>BiSection</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Secant</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Newton</string>
+         </property>
+        </item>
+       </widget>
+      </widget>
+      <widget class="QLabel" name="label_3">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>80</y>
+         <width>81</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Tolerance:</string>
+       </property>
+       <property name="indent">
+        <number>8</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="RootTol">
+       <property name="geometry">
+        <rect>
+         <x>90</x>
+         <y>80</y>
+         <width>44</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="maximum">
+        <number>10</number>
+       </property>
+       <property name="value">
+        <number>2</number>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_4">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>150</y>
+        <width>831</width>
+        <height>441</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Solution</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <widget class="QTableWidget" name="RootTable">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>40</y>
+         <width>571</width>
+         <height>321</height>
+        </rect>
+       </property>
+       <property name="gridStyle">
+        <enum>Qt::PenStyle::SolidLine</enum>
+       </property>
+       <property name="sortingEnabled">
+        <bool>false</bool>
+       </property>
+       <attribute name="horizontalHeaderVisible">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="horizontalHeaderStretchLastSection">
+        <bool>false</bool>
+       </attribute>
+       <attribute name="verticalHeaderVisible">
+        <bool>true</bool>
+       </attribute>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_5">
+       <property name="geometry">
+        <rect>
+         <x>600</x>
+         <y>30</y>
+         <width>221</width>
+         <height>391</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Info</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QPlainTextEdit" name="RootInfo">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>201</width>
+          <height>351</height>
+         </rect>
+        </property>
+        <property name="plainText">
+         <string/>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="RootGroup">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>370</y>
+         <width>571</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Root</string>
+       </property>
+       <widget class="QLabel" name="RootLabel">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>351</width>
+          <height>20</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="InterpolationPage">
+     <widget class="QGroupBox" name="InterpolationInput">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>851</width>
+        <height>201</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Input</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <widget class="QTableWidget" name="InterpolationTable">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>611</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="verticalScrollBarPolicy">
+        <enum>Qt::ScrollBarPolicy::ScrollBarAsNeeded</enum>
+       </property>
+       <property name="gridStyle">
+        <enum>Qt::PenStyle::NoPen</enum>
+       </property>
+       <property name="sortingEnabled">
+        <bool>false</bool>
+       </property>
+       <property name="rowCount">
+        <number>2</number>
+       </property>
+       <property name="columnCount">
+        <number>0</number>
+       </property>
+       <attribute name="horizontalHeaderVisible">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="horizontalHeaderMinimumSectionSize">
+        <number>57</number>
+       </attribute>
+       <attribute name="horizontalHeaderDefaultSectionSize">
+        <number>70</number>
+       </attribute>
+       <attribute name="horizontalHeaderHighlightSections">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="verticalHeaderCascadingSectionResizes">
+        <bool>true</bool>
+       </attribute>
+       <attribute name="verticalHeaderMinimumSectionSize">
+        <number>10</number>
+       </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>27</number>
+       </attribute>
+       <row>
+        <property name="text">
+         <string>X</string>
+        </property>
+       </row>
+       <row>
+        <property name="text">
+         <string>Y</string>
+        </property>
+       </row>
+      </widget>
+      <widget class="QGroupBox" name="TableConfGroup">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>120</y>
+         <width>151</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Table Configure</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QLabel" name="label_4">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>131</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Points:</string>
+        </property>
+       </widget>
+       <widget class="QSpinBox" name="TablePoints">
+        <property name="geometry">
+         <rect>
+          <x>80</x>
+          <y>30</y>
+          <width>44</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+        </property>
+        <property name="minimum">
+         <number>2</number>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="InterpolationMethodGroup">
+       <property name="geometry">
+        <rect>
+         <x>630</x>
+         <y>20</y>
+         <width>201</width>
+         <height>171</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Method</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <widget class="QComboBox" name="InterpolationMethodSelector">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>181</width>
+          <height>25</height>
+         </rect>
+        </property>
+        <property name="layoutDirection">
+         <enum>Qt::LayoutDirection::LeftToRight</enum>
+        </property>
+        <property name="autoFillBackground">
+         <bool>false</bool>
+        </property>
+        <item>
+         <property name="text">
+          <string>Lagrange</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Newton Forward</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Newton Backward</string>
+         </property>
+        </item>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_6">
+       <property name="geometry">
+        <rect>
+         <x>180</x>
+         <y>120</y>
+         <width>120</width>
+         <height>71</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Solve for X</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QDoubleSpinBox" name="InterpolationX">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>101</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="buttonSymbols">
+         <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+        </property>
+        <property name="minimum">
+         <double>-1.000000000000000</double>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QPushButton" name="InterpolationSolveButton">
+       <property name="geometry">
+        <rect>
+         <x>470</x>
+         <y>130</y>
+         <width>151</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>Solve</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_9">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>210</y>
+        <width>851</width>
+        <height>381</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Solution</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <widget class="QGroupBox" name="groupBox_11">
+       <property name="geometry">
+        <rect>
+         <x>12</x>
+         <y>32</y>
+         <width>471</width>
+         <height>337</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Table</string>
+       </property>
+       <widget class="QTableWidget" name="IntAnsTable">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>451</width>
+          <height>301</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="Info">
+       <property name="geometry">
+        <rect>
+         <x>488</x>
+         <y>32</y>
+         <width>351</width>
+         <height>271</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Info</string>
+       </property>
+       <widget class="QPlainTextEdit" name="InterpolationInfo">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>311</width>
+          <height>231</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="Answer">
+       <property name="geometry">
+        <rect>
+         <x>488</x>
+         <y>308</y>
+         <width>351</width>
+         <height>61</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Point</string>
+       </property>
+       <widget class="QLabel" name="Point">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>311</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="IntegerationPage">
+     <widget class="QGroupBox" name="IntInputGroup">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>10</y>
+        <width>851</width>
+        <height>151</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Input</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <widget class="QLabel" name="IntEQLabel">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>131</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Enter F(x):</string>
+       </property>
+       <property name="indent">
+        <number>8</number>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="IntEQInput">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>30</y>
+         <width>451</width>
+         <height>25</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="IntEQLabel_2">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>70</y>
+         <width>131</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Lower bound: </string>
+       </property>
+       <property name="indent">
+        <number>8</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="IntEQLabel_3">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>110</y>
+         <width>131</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Upper bound:</string>
+       </property>
+       <property name="indent">
+        <number>8</number>
+       </property>
+      </widget>
+      <widget class="QLabel" name="IntEQLabel_4">
+       <property name="geometry">
+        <rect>
+         <x>320</x>
+         <y>70</y>
+         <width>131</width>
+         <height>25</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Steps:</string>
+       </property>
+       <property name="indent">
+        <number>8</number>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="LowerBoundInput">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>70</y>
+         <width>151</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="UpperBoundInput">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>110</y>
+         <width>151</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+       </property>
+      </widget>
+      <widget class="QSpinBox" name="StepsInput">
+       <property name="geometry">
+        <rect>
+         <x>400</x>
+         <y>70</y>
+         <width>191</width>
+         <height>27</height>
+        </rect>
+       </property>
+       <property name="wrapping">
+        <bool>false</bool>
+       </property>
+       <property name="frame">
+        <bool>true</bool>
+       </property>
+       <property name="buttonSymbols">
+        <enum>QAbstractSpinBox::ButtonSymbols::NoButtons</enum>
+       </property>
+       <property name="keyboardTracking">
+        <bool>true</bool>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_7">
+       <property name="geometry">
+        <rect>
+         <x>600</x>
+         <y>20</y>
+         <width>241</width>
+         <height>121</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Method</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QComboBox" name="comboBox">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>30</y>
+          <width>221</width>
+          <height>26</height>
+         </rect>
+        </property>
+        <item>
+         <property name="text">
+          <string>Trapezoidal</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Simpson 1/3</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>Simpson 3/8</string>
+         </property>
+        </item>
+       </widget>
+      </widget>
+      <widget class="QPushButton" name="IntSolveButton">
+       <property name="geometry">
+        <rect>
+         <x>438</x>
+         <y>104</y>
+         <width>151</width>
+         <height>31</height>
+        </rect>
+       </property>
+       <property name="cursor">
+        <cursorShape>PointingHandCursor</cursorShape>
+       </property>
+       <property name="text">
+        <string>Solve</string>
+       </property>
+       <property name="flat">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
+     <widget class="QGroupBox" name="groupBox_10">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>170</y>
+        <width>841</width>
+        <height>141</height>
+       </rect>
+      </property>
+      <property name="title">
+       <string>Values Table</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignmentFlag::AlignCenter</set>
+      </property>
+      <widget class="QTableWidget" name="IntTableValues">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>30</y>
+         <width>821</width>
+         <height>101</height>
+        </rect>
+       </property>
+       <property name="layoutDirection">
+        <enum>Qt::LayoutDirection::LeftToRight</enum>
+       </property>
+       <property name="sizeAdjustPolicy">
+        <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustIgnored</enum>
+       </property>
+       <property name="autoScrollMargin">
+        <number>16</number>
+       </property>
+       <property name="alternatingRowColors">
+        <bool>false</bool>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
+       </property>
+       <property name="columnCount">
+        <number>0</number>
+       </property>
+       <attribute name="verticalHeaderCascadingSectionResizes">
+        <bool>false</bool>
+       </attribute>
+       <attribute name="verticalHeaderMinimumSectionSize">
+        <number>32</number>
+       </attribute>
+       <attribute name="verticalHeaderDefaultSectionSize">
+        <number>32</number>
+       </attribute>
+       <attribute name="verticalHeaderStretchLastSection">
+        <bool>true</bool>
+       </attribute>
+       <row>
+        <property name="text">
+         <string>X</string>
+        </property>
+       </row>
+       <row>
+        <property name="text">
+         <string>F(X)</string>
+        </property>
+       </row>
+      </widget>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="EulerPage"/>
+    <widget class="QWidget" name="CurveFittingPage"/>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>10</y>
+      <width>331</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>FreeSerif</family>
+      <pointsize>22</pointsize>
+     </font>
+    </property>
+    <property name="layoutDirection">
+     <enum>Qt::LayoutDirection::RightToLeft</enum>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Shape::NoFrame</enum>
+    </property>
+    <property name="text">
+     <string>Numerical Analysis Project</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+    <property name="indent">
+     <number>8</number>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>60</y>
+      <width>181</width>
+      <height>581</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Problem</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignCenter</set>
+    </property>
+    <widget class="QPushButton" name="RootPageBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Root</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="InterpolationPageBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>100</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Interpolation</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="IntegerationPageBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>170</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Integeration</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="EulerPageBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>230</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Euler</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="CurveFittingPageBtn">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>290</y>
+       <width>161</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Curve Fitting</string>
+     </property>
+     <property name="flat">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1075</width>
+     <height>22</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

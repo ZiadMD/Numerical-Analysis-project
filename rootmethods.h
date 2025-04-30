@@ -1,0 +1,68 @@
+#ifndef ROOTMETHODS_H
+#define ROOTMETHODS_H
+
+#include <iostream>
+#include <ginac/ginac.h>
+#include <cmath>
+#include <utility>
+#include <vector>
+#include <iomanip>
+#include <map>
+#include <vector>
+
+// #include "method.h"
+
+using namespace std;
+using namespace GiNaC;
+
+struct RootReturn{
+    map<char, vector<double>> RootVariables;
+    double Root;
+};
+
+class RootMethods
+{
+
+
+public:
+
+    // —————— PARSER SETUP ——————
+    // Returns a GiNaC parser with x, common constants, and all
+    // standard math functions (exp, log/ln, trig, sqrt, min/max, etc.)
+    static parser make_full_parser(const symbol &x);
+
+    // —————— UTILITY ——————
+    bool matchDecimals(double a, double b, double tol = 1e-6);
+    pair<double, double> findBracket(
+        const ex &f_expr,
+        symbol      x,
+        double      start,
+        double      end,
+        double      step = 1);
+    double findInitialGuess(const pair<double, double> &bracket);
+
+
+
+    // —————— ROOT-FINDERS ——————
+    RootReturn newtonMethod(
+        const ex &f_expr,
+        symbol      x,
+        pair<double,double> &bracket,
+        double      tol,
+        int         maxIterations = 100);
+    RootReturn bisectionMethod(
+        const ex &f_expr,
+        symbol      x,
+        pair<double,double> &bracket,
+        double      tol,
+        int         maxIterations = 100);
+    RootReturn secantMethod(
+        const ex &f_expr,
+        symbol      x,
+        pair<double,double> &bracket,
+        double      tol,
+        int         maxIterations = 100);
+
+};
+
+#endif // ROOTMETHODS_H
