@@ -195,7 +195,7 @@ for (size_t k = 1; k < x.size(); ++k) {
 ### 3. Newton Forward Interpolation
 
 $$
-P(x) = \sum_{k=0}^{n} D^{(k)}_0 \prod_{i=0}^{k-1} (x - x_i)
+P(x) = \sum_{k=0}^{n} D^{(k)}\_0 \prod\_{i=0}^{k-1} (x - x_i)
 $$
 
 ```cpp
@@ -214,7 +214,7 @@ for (size_t k = 0; k < D.size(); ++k) {
 ### 4. Newton Backward Interpolation
 
 $$
-P(x) = \sum_{k=0}^{n} D^{(k)}_{n-k} \prod_{i=0}^{k-1} (x - x_{n-i})
+P(x) = \sum_{k=0}^{n} D^{(k)}\_{n-k} \prod_{i=0}^{k-1} (x - x\_{n-i})
 $$
 
 ```cpp
