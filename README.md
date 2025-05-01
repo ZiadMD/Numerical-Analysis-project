@@ -81,8 +81,13 @@ This section explains the algorithms and implementations of root-finding techniq
 
 ### 1. Newton’s Method
 
-Formula:
-$$x_{n+1} = x_n - \frac{f(x_n)}{f'(x_n)}$$
+### Concept
+
+Newton’s method iteratively refines an initial guess to a root of $f(x)$ by:
+
+$$x\_{n+1} = x\_n - \frac{f(x\_n)}{f'(x\_n)}$$
+
+Convergence is quadratic near the root if $f'(x) \neq 0$.
 
 ```cpp
 df_expr = diff(f_expr, x);
@@ -103,7 +108,18 @@ for (int i = 0; i < maxIterations; ++i) {
 ---
 
 ### 2. Bisection Method
+### Concept
 
+If $f(a)$ and $f(b)$ have opposite signs, a root lies in $[a, b]$. Repeatedly bisect the interval:
+
+1. Compute midpoint $c = \frac{a + b}{2}$
+    
+2. Evaluate $f(c)$.
+    
+3. Replace `[a,b]` with `[a,c]` or `[c,b]` depending on sign.
+    
+4. Stop when midpoint converges to tolerance or max iterations.
+    
 ```cpp
 History.RootVariables['a'] = {a};
 History.RootVariables['b'] = {b};
@@ -129,7 +145,13 @@ History.Root = History.RootVariables['x'].back();
 ---
 
 ### 3. Secant Method
+### Concept
 
+The secant method approximates the derivative by a finite difference using the two most recent iterates:
+
+$$
+x\_{n+1} = x\_n - \frac{f(x\_n)(x_n - x\_{n-1})}{f(x\_n)-f(x\_{n-1})}
+$$
 ```cpp
 x0 = bracket.first;
 x1 = bracket.second;
@@ -154,11 +176,16 @@ for (int i = 2; i < maxIterations; ++i) {
 
 # Interpolation Methods
 
-### 1. Lagrange Interpolation
+## 1. Lagrange Interpolation
+### 1.1. Concept
 
-$$
-P(x) = \sum_{k=0}^{n} y_k L_k(x),\quad
-L_k(x) = \prod_{\substack{0 \le m \le n \\ m \neq k}} \frac{x - x_m}{x_k - x_m}
+Given $n+1$ data points $(x_0, y_0), \dots, (x_n, y_n)$, the Lagrange form of the interpolating polynomial is:
+
+$$P(x) \;=\; \sum_{k=0}^{n} y\_k \, L\_k(x)$$
+
+where each basis polynomial $L_k(x)$ is:
+
+$$L\_k(x) \;=\; \prod_{\substack{0 \le m \le n \\ m \neq k}} \frac{x - x_m}{x_k - x_m}
 $$
 
 ```cpp
@@ -177,10 +204,24 @@ double P_v = numeric(P_ex.subs(sym == x_));
 
 ---
 
-### 2. Newton’s Divided-Difference Table
+## 2. Newton’s Divided‑Difference Table
+
+### 2.1. Concept
+
+The divided‑difference table stores coefficients for Newton’s form. The zeroth-order differences are the original $y-values$:
+
+$$D^{(0)}_i = y_i,\quad i=0,\dots,n.$$
+
+Higher orders are computed by:
+
+$$D^{(k)}\_i = \frac{D^{(k-1)}\_{i+1} - D^{(k-1)}\_{i}}{x\_{i+k} - x\_i},$$
+
+for $k=1,2,\dots,n$.
+
+### 2.2. Implementation Highlights
 
 ```cpp
-History.D.push_back(y);
+History.D.push_back(y);           // zeroth order
 for (size_t k = 1; k < x.size(); ++k) {
     vector<double> d_k(x.size() - k);
     for (size_t i = 0; i < d_k.size(); ++i) {
@@ -192,11 +233,20 @@ for (size_t k = 1; k < x.size(); ++k) {
 
 ---
 
-### 3. Newton Forward Interpolation
+## 3. Newton Forward & Backward Interpolation
 
-$$
-P(x) = \sum_{k=0}^{n} D^{(k)}\_0 \prod\_{i=0}^{k-1} (x - x_i)
-$$
+### 3.1. Forward Newton
+
+The Newton forward polynomial is:
+
+$$P(x)\;=\;\sum\_{k=0}^{n} D^{(k)}\_0 \;\prod\_{i=0}^{k-1} (x - x\_i)$$.
+
+- **Coefficient**: `D[k][0]` (first element of each row)
+    
+- **Term**: product of $((x - x\_0)(x - x\_1)\dots(x - x\_{k-1})$`
+    
+
+**Code Snippet**:
 
 ```cpp
 ex P_ex = 0;
@@ -209,13 +259,18 @@ for (size_t k = 0; k < D.size(); ++k) {
 }
 ```
 
----
+### 3.2. Backward Newton
 
-### 4. Newton Backward Interpolation
+The backward form uses the last data point and backward differences:
 
-$$
-P(x) = \sum_{k=0}^{n} D^{(k)}\_{n-k} \prod_{i=0}^{k-1} (x - x\_{n-i})
-$$
+$$P(x)\;=\;\sum\_{k=0}^{n} D^{(k)}\_{n-k} \;\prod_{i=0}^{k-1} (x - x\_{n-i})$$
+
+- **Coefficient**: `D[k].back()` (last element of each row)
+    
+- **Term**: product of $((x - x\_n)(x - x\_{n-1})\dots(x - x\_{n-k+1})$`
+    
+
+**Code Snippet**:
 
 ```cpp
 ex P_ex = 0;
