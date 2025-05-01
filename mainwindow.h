@@ -5,6 +5,8 @@
 #include <QMessageBox>
 
 #include "rootmethods.h"
+#include "interpolationmethods.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -36,8 +38,11 @@ private slots:
 
     void on_RootSolveButton_clicked();
 
+    void on_InterpolationSolveButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     RootMethods RootSolver;
+    InterpolationMethods InterpolSolver;
 };
 #endif // MAINWINDOW_H

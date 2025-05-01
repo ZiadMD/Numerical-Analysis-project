@@ -5,6 +5,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , RootSolver(RootMethods())
+    , InterpolSolver(InterpolationMethods())
 {
     ui->setupUi(this);
 }
@@ -230,3 +231,93 @@ void MainWindow::on_RootSolveButton_clicked()
         }
     }
 }
+
+
+void MainWindow::on_InterpolationSolveButton_clicked()
+{
+    int MethodIndex = ui->InterpolationMethodSelector->currentIndex();
+    int Points = ui->TablePoints->value();
+    if(MethodIndex == 0) {
+        QMessageBox::warning(this, "Empty Method", "Please Choose a Method first!");
+        return;
+    }
+
+    QTableWidget *table = ui->InterpolationTable;
+    int colCount = table->columnCount();
+
+    std::vector<double> x, y;
+
+    for (int col = 0; col < colCount; ++col) {
+        bool ok1, ok2;
+        double a = table->item(0, col) ? table->item(0, col)->text().toDouble(&ok1) : 0;
+        double b = table->item(1, col) ? table->item(1, col)->text().toDouble(&ok2) : 0;
+
+        if (ok1 && ok2) {
+            x.push_back(a);
+            y.push_back(b);
+        }
+    }
+
+    // 1. Empty Check
+    if (x.empty() || y.empty()) {
+        QMessageBox::warning(this, "Empty Data", "Please fill x and y values in the table.");
+        return;
+    }
+
+    // 2. Mismatch Check
+    if (x.size() < Points) {
+        QMessageBox::warning(this, "Mismatch", "x and y must have the same number of values.");
+        return;
+    }
+
+    // 3. Get min & max of x
+    auto [min_it, max_it] = std::minmax_element(x.begin(), x.end());
+    double x_min = *min_it;
+    double x_max = *max_it;
+
+    qDebug() << "x min:" << x_min << ", x max:" << x_max;
+
+    double solve_x = ui->InterpolationX->value();
+
+    if(solve_x > x_max || solve_x < x_min){
+        QString Warning = QString::fromStdString("enter a valid number between " + to_string(x_min) + " and " + to_string(x_max) + " .");
+        QMessageBox::warning(this, "Out of range", Warning);
+        return;
+    }
+
+    if(MethodIndex == 1){ // Lagranch
+        symbol sym("x");
+        InterpolationReturn Sol = InterpolSolver.lagrangeInterpolation(x,y,solve_x,sym);
+
+        auto *ansTable = ui->InterpolAnsTable;
+        ansTable->setColumnCount(3);
+        ansTable->setHorizontalHeaderLabels({"L", "L Expresion", "L value"});
+        ansTable->setRowCount(Sol.L.size());
+
+        for (int n = 0; n < Sol.L.size(); ++n) {
+            // simple preview L0 | L0_ex | L0_val
+            QString lName = QString("L%1").arg(n);
+            std::ostringstream oss;
+            oss << Sol.L[n].first.expand();
+            QString lExpr = QString::fromStdString(oss.str());
+            QString lVal = QString::number(Sol.L[n].second);
+
+            ansTable->setItem(n, 0, new QTableWidgetItem(lName));
+            ansTable->setItem(n, 1, new QTableWidgetItem(lExpr));
+            ansTable->setItem(n, 2, new QTableWidgetItem(lVal));
+        }
+
+        ui->Point->setText(QString::number(Sol.P.second));
+
+        string info;
+        info += "Method: Lagranch.\n\n";
+
+        std::ostringstream oss;
+        oss << Sol.P.first.expand();
+        info += "P(x) = " + oss.str();
+
+        ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
+    }
+
+}
+
