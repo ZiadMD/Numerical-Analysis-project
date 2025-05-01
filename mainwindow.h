@@ -22,7 +22,6 @@ public:
 
 private slots:
 
-
     void on_TablePoints_valueChanged(int arg1);
 
     void on_RootPageBtn_clicked();
@@ -36,7 +35,6 @@ private slots:
     void on_CurveFittingPageBtn_clicked();
 
     void on_RootSolveButton_clicked();
-
 
 private:
     Ui::MainWindow *ui;

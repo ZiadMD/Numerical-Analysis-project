@@ -4,10 +4,9 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , RootSolver (RootMethods())
+    , RootSolver(RootMethods())
 {
     ui->setupUi(this);
-
 }
 
 MainWindow::~MainWindow()
@@ -15,12 +14,10 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-
 void MainWindow::on_TablePoints_valueChanged(int arg1)
 {
     ui->InterpolationTable->setColumnCount(arg1);
 }
-
 
 void MainWindow::on_RootPageBtn_clicked()
 {
@@ -50,8 +47,6 @@ void MainWindow::on_IntegerationPageBtn_clicked()
     ui->InterpolationPageBtn->setFlat(1);
     ui->EulerPageBtn->setFlat(1);
     ui->CurveFittingPageBtn->setFlat(1);
-
-
 }
 
 void MainWindow::on_EulerPageBtn_clicked()
@@ -76,26 +71,21 @@ void MainWindow::on_CurveFittingPageBtn_clicked()
 
 void MainWindow::on_RootSolveButton_clicked()
 {
-    if(ui->RootEQInput->text().isEmpty()){
-
+    if (ui->RootEQInput->text().isEmpty()) {
         QMessageBox::warning(this, "Empty Equation", "     Please Enter F(x)!      ");
 
     } else {
-
-        if(ui->MethodSelector->currentIndex() == 0){
-
+        if (ui->MethodSelector->currentIndex() == 0) {
             QMessageBox::warning(this, "Empty Method", "  Please Choose a Method!  ");
 
-        } else{
-
+        } else {
             string eq = ui->RootEQInput->text().toStdString();
             int tol_ = ui->RootTol->value();
             symbol x("x");
             parser p = RootSolver.make_full_parser(x);
             ex fx;
 
-
-            try{
+            try {
                 fx = p(eq);
             } catch (const exception &e) {
                 QMessageBox::warning(this, "Unspported", "Wrong or Unspported Equation!");
@@ -107,8 +97,7 @@ void MainWindow::on_RootSolveButton_clicked()
 
             int method = ui->MethodSelector->currentIndex();
 
-
-            if(method == 1){
+            if (method == 1) {
                 root = RootSolver.bisectionMethod(fx, x, bracket, tol_, 100);
                 ui->RootLabel->setText(QString::number(root.Root));
 
@@ -119,28 +108,38 @@ void MainWindow::on_RootSolveButton_clicked()
                 ui->RootTable->setHorizontalHeaderLabels(headers);
                 ui->RootTable->horizontalHeader()->setStretchLastSection(0);
 
-
                 // Get vectors from RootReturn
-                const std::vector<double>& a_values = root.RootVariables['a'];
-                const std::vector<double>& b_values = root.RootVariables['b'];
-                const std::vector<double>& x_values = root.RootVariables['x'];
+                const std::vector<double> &a_values = root.RootVariables['a'];
+                const std::vector<double> &b_values = root.RootVariables['b'];
+                const std::vector<double> &x_values = root.RootVariables['x'];
 
                 // Determine row count (use the smallest size to avoid out-of-range)
                 int rowCount = std::min({a_values.size(), b_values.size(), x_values.size()});
                 ui->RootTable->setRowCount(rowCount);
-                std::cout<< std::fixed << std::setprecision(17);
+                std::cout << std::fixed << std::setprecision(17);
                 // Fill table
                 for (int i = 0; i < rowCount; ++i) {
-                    ui->RootTable->setItem(i, 0, new QTableWidgetItem(QString::number(a_values[i], 'f', max(5, tol_))));
-                    ui->RootTable->setItem(i, 1, new QTableWidgetItem(QString::number(b_values[i], 'f', max(5, tol_))));
-                    ui->RootTable->setItem(i, 2, new QTableWidgetItem(QString::number(x_values[i], 'f', max(5, tol_))));
+                    ui->RootTable->setItem(i,
+                                           0,
+                                           new QTableWidgetItem(
+                                               QString::number(a_values[i], 'f', max(5, tol_))));
+                    ui->RootTable->setItem(i,
+                                           1,
+                                           new QTableWidgetItem(
+                                               QString::number(b_values[i], 'f', max(5, tol_))));
+                    ui->RootTable->setItem(i,
+                                           2,
+                                           new QTableWidgetItem(
+                                               QString::number(x_values[i], 'f', max(5, tol_))));
                 }
 
                 //Fill info
                 string info;
                 info = "Sign changed between:\n";
-                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second) + "\n";
-                info += "Method Took " + to_string(x_values.size()) + " iterations to find the root.\n";
+                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second)
+                        + "\n";
+                info += "Method Took " + to_string(x_values.size())
+                        + " iterations to find the root.\n";
 
                 ui->RootInfo->setPlainText(QString::fromStdString(info));
             }
@@ -156,7 +155,7 @@ void MainWindow::on_RootSolveButton_clicked()
                 ui->RootTable->horizontalHeader()->setStretchLastSection(1);
 
                 // Get vectors from RootReturn
-                const std::vector<double>& x_values = root.RootVariables['x'];
+                const std::vector<double> &x_values = root.RootVariables['x'];
 
                 // Determine row count (use the smallest size to avoid out-of-range)
                 int rowCount = x_values.size();
@@ -164,15 +163,23 @@ void MainWindow::on_RootSolveButton_clicked()
 
                 // Fill table
                 for (int i = 0; i < rowCount; ++i) {
-                    ui->RootTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString("x" + to_string(i))));
-                    ui->RootTable->setItem(i, 1, new QTableWidgetItem(QString::number(x_values[i], 'f', max(5, tol_))));
+                    ui->RootTable->setItem(i,
+                                           0,
+                                           new QTableWidgetItem(
+                                               QString::fromStdString("x" + to_string(i))));
+                    ui->RootTable->setItem(i,
+                                           1,
+                                           new QTableWidgetItem(
+                                               QString::number(x_values[i], 'f', max(5, tol_))));
                 }
 
                 //Fill info
                 string info;
                 info = "Sign changed between:\n";
-                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second) + "\n";
-                info += "Method Took " + to_string(x_values.size()) + " iterations to find the root.\n";
+                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second)
+                        + "\n";
+                info += "Method Took " + to_string(x_values.size())
+                        + " iterations to find the root.\n";
 
                 ui->RootInfo->setPlainText(QString::fromStdString(info));
             }
@@ -190,7 +197,7 @@ void MainWindow::on_RootSolveButton_clicked()
                 ui->RootTable->horizontalHeader()->setStretchLastSection(1);
 
                 // Get vectors from RootReturn
-                const std::vector<double>& x_values = root.RootVariables['x'];
+                const std::vector<double> &x_values = root.RootVariables['x'];
 
                 // Determine row count (use the smallest size to avoid out-of-range)
                 int rowCount = x_values.size();
@@ -198,25 +205,28 @@ void MainWindow::on_RootSolveButton_clicked()
 
                 // Fill table
                 for (int i = 0; i < rowCount; ++i) {
-                    ui->RootTable->setItem(i, 0, new QTableWidgetItem(QString::fromStdString("x" + to_string(i))));
-                    ui->RootTable->setItem(i, 1, new QTableWidgetItem(QString::number(x_values[i], 'f', max(5, tol_))));
+                    ui->RootTable->setItem(i,
+                                           0,
+                                           new QTableWidgetItem(
+                                               QString::fromStdString("x" + to_string(i))));
+                    ui->RootTable->setItem(i,
+                                           1,
+                                           new QTableWidgetItem(
+                                               QString::number(x_values[i], 'f', max(5, tol_))));
                 }
 
                 //Fill info
                 string info;
                 info = "Sign changed between:\n";
-                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second) + "\n\n";
-                info += "Method Took " + to_string(x_values.size()) + " iterations to find the root.\n";
+                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second)
+                        + "\n\n";
+                info += "Method Took " + to_string(x_values.size())
+                        + " iterations to find the root.\n";
                 std::ostringstream oss;
                 oss << df_expr;
                 info += "\n\n dfx = " + oss.str() + "\n";
                 ui->RootInfo->setPlainText(QString::fromStdString(info));
             }
-
         }
     }
 }
-
-
-
-
