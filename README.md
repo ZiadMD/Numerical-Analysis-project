@@ -67,8 +67,6 @@ Ensure all dependencies are installed and accessible via your package manager or
    ```bash
    cmake ..
    ```
-   - **Disable GUI:** `cmake -DWITH_GUI=OFF ..`
-   - **Build type:** `cmake -DCMAKE_BUILD_TYPE=Release ..`
 4. **Compile & install**
    ```bash
    cmake --build . -- -j$(nproc)
