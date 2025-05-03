@@ -31,12 +31,14 @@ InterpolationReturn InterpolationMethods::newtonForwardInterpolation(const vecto
 {
     InterpolationReturn History = NewtonTable(x,y);
 
-    ex P_ex;
+    ex P_ex = 0;
     for (int term = 0; term < History.D.size(); ++term) {
-        P_ex += numeric(History.D[term].front());
+        ex temp = 1;
+
         for (int i = 0; i < term; ++i) {
-            P_ex *= (sym - x[i-1]);
+            temp *= (sym - x[i]);
         }
+        P_ex += numeric(History.D[term].front()) * temp;
     }
 
     double P_v = ex_to<numeric>(P_ex.subs(sym == x_)).to_double();
@@ -52,10 +54,12 @@ InterpolationReturn InterpolationMethods::newtonBackwardInterpolation(const vect
     InterpolationReturn History = NewtonTable(x,y);
     ex P_ex;
     for (int term = 0; term < History.D.size(); ++term) {
-        P_ex += numeric(History.D[term].back());
-            for (int i = 0; i < term; ++i) {
-            P_ex *= (sym - x[i-1]);
+        ex temp = 1;
+
+        for (int i = 0; i < term; ++i) {
+            temp *= (sym - x[x.size()-1-i]);
         }
+        P_ex += numeric(History.D[term].back()) * temp;
     }
 
     double P_v = ex_to<numeric>(P_ex.subs(sym == x_)).to_double();

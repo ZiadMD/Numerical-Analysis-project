@@ -285,11 +285,13 @@ void MainWindow::on_InterpolationSolveButton_clicked()
         return;
     }
 
+    auto *ansTable = ui->InterpolAnsTable;
+    symbol sym("x");
+
     if(MethodIndex == 1){ // Lagranch
-        symbol sym("x");
         InterpolationReturn Sol = InterpolSolver.lagrangeInterpolation(x,y,solve_x,sym);
 
-        auto *ansTable = ui->InterpolAnsTable;
+
         ansTable->setColumnCount(3);
         ansTable->setHorizontalHeaderLabels({"L", "L Expresion", "L value"});
         ansTable->setRowCount(Sol.L.size());
@@ -318,6 +320,106 @@ void MainWindow::on_InterpolationSolveButton_clicked()
 
         ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
     }
+
+    if (MethodIndex == 2){
+        InterpolationReturn Sol = InterpolSolver.newtonForwardInterpolation(x,y,solve_x,sym);
+
+        ansTable->setColumnCount(Sol.D.size()+1);
+        QStringList header = {"x", "y"};
+        for (int i = 1; i <= Sol.D.size()-1; ++i) {
+            header.push_back(QString::fromStdString("Δ" + to_string(i)));
+        }
+        ansTable->setHorizontalHeaderLabels(header);
+        ansTable->setRowCount(x.size());
+        vector<vector<double>> T;
+        T.push_back(x);
+
+        for (auto D : Sol.D) {
+            T.push_back(D);
+        }
+
+            for (int i = 0; i < T.size(); ++i) {
+                for (int n = 0; n < T[i].size(); ++n) {
+                    ansTable->setItem(n, i, new QTableWidgetItem(QString::number(T[i][n])));
+                }
+            }
+
+        // Print D matrix (Newton data)
+        string info = "Method: Newton Forward.\n\n";
+        double x_mid = (x_max + x_min)/2;
+
+        info += "Best Method for this point is ";
+        if (solve_x < x_mid) {
+            info += "Forward";
+        } else if (solve_x > x_mid) {
+            info += "Backward";
+        } else {
+            info += "Either Work";
+        }
+        info += "\n\n";
+        ostringstream oss;
+        oss << "P(x) = " << Sol.P.first.expand();
+        info += oss.str() + "\n\n";
+
+
+
+
+        // Show in UI
+        ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
+
+        ui->Point->setText(QString::number(Sol.P.second));
+
+    }
+
+    if(MethodIndex == 3){
+        InterpolationReturn Sol = InterpolSolver.newtonBackwardInterpolation(x,y,solve_x,sym);
+
+        ansTable->setColumnCount(Sol.D.size()+1);
+        QStringList header = {"x", "y"};
+        for (int i = 1; i <= Sol.D.size()-1; ++i) {
+            header.push_back(QString::fromStdString("Δ" + to_string(i)));
+        }
+        ansTable->setHorizontalHeaderLabels(header);
+        ansTable->setRowCount(x.size());
+        vector<vector<double>> T;
+        T.push_back(x);
+
+        for (auto D : Sol.D) {
+            T.push_back(D);
+        }
+
+        for (int i = 0; i < T.size(); ++i) {
+            for (int n = T[0].size() - T[i].size(); n < T[0].size(); ++n) {
+                ansTable->setItem(n, i, new QTableWidgetItem(QString::number(T[i][n])));
+            }
+        }
+
+        // Print D matrix (Newton data)
+        string info = "Method: Newton Backward.\n\n";
+        double x_mid = (x_max + x_min)/2;
+
+        info += "Best Method for this point is ";
+        if (solve_x < x_mid) {
+            info += "Forward";
+        } else if (solve_x > x_mid) {
+            info += "Backward";
+        } else {
+            info += "Either Work";
+        }
+        info += "\n\n";
+        ostringstream oss;
+        oss << "P(x) = " << Sol.P.first.expand();
+        info += oss.str() + "\n\n";
+
+
+
+
+        // Show in UI
+        ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
+
+        ui->Point->setText(QString::number(Sol.P.second));
+    }
+
 
 }
 
