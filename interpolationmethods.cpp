@@ -1,77 +1,84 @@
 #include "interpolationmethods.h"
-#include <iostream>
-#include <cmath>
 
-using namespace GiNaC;
-using namespace std;
-
-ex InterpolationMethods::lagrangeInterpolation(const vector<numeric> &x, const vector<numeric> &y, const symbol &sym)
+InterpolationReturn InterpolationMethods::lagrangeInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
-    int n = x.size();
-    ex result = 0;
-
-    for (int i = 0; i < n; i++)
-    {
-        ex term = y[i];
-        for (int j = 0; j < n; j++)
-        {
-            if (j != i)
-                term *= (sym - x[j]) / (x[i] - x[j]);
+    InterpolationReturn History;
+    for (int n = 0; n < x.size(); ++n) {
+        ex l_n = 1;
+        for (int m = 0; m < x.size(); ++m) {
+            if(n == m) continue;
+            l_n *= (sym - x[m]) / (x[n] - x[m]);
         }
-        result += term;
+        double l_nx = ex_to<numeric>(l_n.subs(sym == x_)).to_double();
+        History.L.push_back(make_pair(l_n, l_nx));
     }
 
-    return result.expand();
+    ex P_ex;
+    for (int n = 0; n < y.size(); ++n) {
+        P_ex += History.L[n].first * y[n];
+    }
+
+    double P_v = ex_to<numeric>(P_ex.subs(sym == x_)).to_double();
+
+    History.P = make_pair(P_ex, P_v);
+
+    History.D = {};
+
+    return History;
 }
 
-ex InterpolationMethods::newtonForwardInterpolation(const vector<numeric> &x, const vector<numeric> &y, const symbol &sym)
+InterpolationReturn InterpolationMethods::newtonForwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
-    int n = x.size();
-    vector<vector<ex>> diff(n, vector<ex>(n));
+    InterpolationReturn History = NewtonTable(x,y);
 
-    for (int i = 0; i < n; i++)
-        diff[i][0] = y[i];
+    ex P_ex = 0;
+    for (int term = 0; term < History.D.size(); ++term) {
+        ex temp = 1;
 
-    for (int j = 1; j < n; j++)
-        for (int i = 0; i < n - j; i++)
-            diff[i][j] = diff[i + 1][j - 1] - diff[i][j - 1];
-
-    ex h = x[1] - x[0];
-    ex u = (sym - x[0]) / h;
-    ex result = diff[0][0];
-    ex u_term = 1;
-
-    for (int i = 1; i < n; i++)
-    {
-        u_term *= (u - (i - 1));
-        result += (u_term * diff[0][i]) / factorial(i);
+        for (int i = 0; i < term; ++i) {
+            temp *= (sym - x[i]);
+        }
+        P_ex += numeric(History.D[term].front()) * temp;
     }
 
-    return result.expand();
+    double P_v = ex_to<numeric>(P_ex.subs(sym == x_)).to_double();
+
+    History.P = make_pair(P_ex, P_v);
+    History.L = {};
+
+    return History;
 }
 
-ex InterpolationMethods::newtonBackwardInterpolation(const vector<numeric> &x, const vector<numeric> &y, const symbol &sym)
+InterpolationReturn InterpolationMethods::newtonBackwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
-    int n = x.size();
-    vector<vector<ex>> diff(n, vector<ex>(n));
+    InterpolationReturn History = NewtonTable(x,y);
+    ex P_ex;
+    for (int term = 0; term < History.D.size(); ++term) {
+        ex temp = 1;
 
-    for (int i = 0; i < n; i++)
-        diff[i][0] = y[i];
-
-    for (int j = 1; j < n; j++)
-        for (int i = n - 1; i >= j; i--)
-            diff[i][j] = diff[i][j - 1] - diff[i - 1][j - 1];
-
-    ex h = x[1] - x[0];
-    ex u = (sym - x[n - 1]) / h;
-    ex result = diff[n - 1][0];
-    ex u_term = 1;
-
-    for (int i = 1; i < n; i++)
-    {
-        u_term *= (u + (i - 1));
-        result += (u_term * diff[n - 1][i]) / factorial(i);
+        for (int i = 0; i < term; ++i) {
+            temp *= (sym - x[x.size()-1-i]);
+        }
+        P_ex += numeric(History.D[term].back()) * temp;
     }
 
-    return result.expand();
+    double P_v = ex_to<numeric>(P_ex.subs(sym == x_)).to_double();
+
+    History.P = make_pair(P_ex, P_v);
+
+    return History;
+}
+
+InterpolationReturn InterpolationMethods::NewtonTable(const vector<double> &x, const std::vector<double> &y)
+{
+    InterpolationReturn History;
+    History.D.push_back(y);
+    for (int n = 1; n < x.size(); ++n) {
+        vector<double> dn(x.size() - n);
+        for (int m = 0; m < x.size() - n; ++m) {
+            dn[m] = (History.D[n-1][m+1] - History.D[n-1][m])/(x[n+m] - x[m]);
+        }
+        History.D.push_back(dn);
+    }
+    return History;
 }

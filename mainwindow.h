@@ -5,6 +5,8 @@
 #include <QMessageBox>
 
 #include "rootmethods.h"
+#include "interpolationmethods.h"
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,7 +24,6 @@ public:
 
 private slots:
 
-
     void on_TablePoints_valueChanged(int arg1);
 
     void on_RootPageBtn_clicked();
@@ -37,9 +38,11 @@ private slots:
 
     void on_RootSolveButton_clicked();
 
+    void on_InterpolationSolveButton_clicked();
 
 private:
     Ui::MainWindow *ui;
     RootMethods RootSolver;
+    InterpolationMethods InterpolSolver;
 };
 #endif // MAINWINDOW_H

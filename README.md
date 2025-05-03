@@ -6,21 +6,22 @@ A Linux-optimized C++17 application showcasing fundamental numerical analysis al
 
 ## 🚀 Features Overview
 
-**Root Finding**\
-• Bisection Method (bracketing)\
-• Newton–Raphson Method (tangent-based)\
-• Secant Method (finite-difference)
+**Root Finding**  
+• Bisection Method (bracketing)  
+• Newton–Raphson Method (tangent-based)  
+• Secant Method (finite-difference)  
 
-**Polynomial Interpolation**\
-• Newton’s Divided Differences\
-• Lagrange Polynomial Construction
+**Polynomial Interpolation**  
+• Newton’s Divided Differences  
+• Lagrange Polynomial Construction  
+• Newton Forward & Backward Interpolation  
 
-**Numerical Integration**\
-• Composite Trapezoidal Rule\
-• Composite Simpson’s Rule
+**Numerical Integration**  
+• Composite Trapezoidal Rule  
+• Composite Simpson’s Rule  
 
-**Interfaces**\
-• **CLI:** Quick scriptable operations with customizable flags.\
+**Interfaces**  
+• **CLI:** Quick scriptable operations with customizable flags.  
 • **Qt6 GUI:** Interactive forms, result tables, and real-time plotting.
 
 ---
@@ -29,10 +30,10 @@ A Linux-optimized C++17 application showcasing fundamental numerical analysis al
 
 > **Platform:** Primarily tested on Linux (Ubuntu 20.04+ / Fedora). Other POSIX systems may work with minor tweaks.
 
-- **C++17** (GCC ≥ 9, Clang ≥ 10)
-- **CMake** ≥ 3.19
-- **Qt6** ≥ 6.5 (Core & Widgets modules)
-- **GiNaC** (symbolic math via pkg-config)
+- **C++17** (GCC ≥ 9, Clang ≥ 10)  
+- **CMake** ≥ 3.19  
+- **Qt6** ≥ 6.5 (Core & Widgets modules)  
+- **GiNaC** (symbolic math via pkg-config)  
 - **pkg-config** (for locating GiNaC)
 
 ### Installing GiNaC on Ubuntu/Debian
@@ -47,8 +48,6 @@ sudo apt install libginac-dev pkg-config
 ```bash
 sudo dnf install ginac-devel pkgconfig
 ```
-
-Ensure all dependencies are installed and accessible via your package manager or built from source.
 
 ---
 
@@ -67,56 +66,230 @@ Ensure all dependencies are installed and accessible via your package manager or
    ```bash
    cmake ..
    ```
-   - **Disable GUI:** `cmake -DWITH_GUI=OFF ..`
-   - **Build type:** `cmake -DCMAKE_BUILD_TYPE=Release ..`
 4. **Compile & install**
    ```bash
    cmake --build . -- -j$(nproc)
    sudo cmake --install .
    ```
 
-Binaries will be installed under `/usr/local/bin/` (by default).
 
 ---
 
-## ⚙️ Usage Guide
+# Root Methods
 
+This section explains the algorithms and implementations of root-finding techniques:
 
-### 1. Qt6 Graphical Interface (GUI)
+### 1. Newton’s Method
 
-1. **Launch the GUI**
-   ```bash
-   Numerical_AnalysisGUI
-   ```
-2. **Select Operation**\
-   Choose **Root Finding**, **Interpolation**, or **Integration** from the sidebar.
-3. **Input Parameters**
-   - Enter the function or data points.
-   - Set interval (`a`, `b`), subdivisions (`n`), or tolerance (`tol`).
-4. **Compute & Visualize**\
-   Click **Compute** to display:
-   - Numeric results in a table.
-   - Real-time plot of function behavior or interpolation polynomial.
+### Concept
 
-#### Sample GUI Layout
+Newton’s method iteratively refines an initial guess to a root of $f(x)$ by:
 
+$$x\_{n+1} = x\_n - \frac{f(x\_n)}{f'(x\_n)}$$
 
+Convergence is quadratic near the root if $f'(x) \neq 0$.
+
+```cpp
+df_expr = diff(f_expr, x);
+History.RootVariables['x'].push_back(findInitialGuess(bracket));
+
+for (int i = 0; i < maxIterations; ++i) {
+    fx  = ex_to<numeric>(f_expr.subs(x==x_i)).to_double();
+    dfx = ex_to<numeric>(df_expr.subs(x==x_i)).to_double();
+    History.RootVariables['x'].push_back(x_i - fx/dfx);
+
+    if (matchDecimals(x_{i+1}, x_i, tol)) {
+        History.Root = x_{i+1};
+        break;
+    }
+}
+```
+
+---
+
+### 2. Bisection Method
+### Concept
+
+If $f(a)$ and $f(b)$ have opposite signs, a root lies in $[a, b]$. Repeatedly bisect the interval:
+
+1. Compute midpoint $c = \frac{a + b}{2}$
+    
+2. Evaluate $f(c)$.
+    
+3. Replace `[a,b]` with `[a,c]` or `[c,b]` depending on sign.
+    
+4. Stop when midpoint converges to tolerance or max iterations.
+    
+```cpp
+History.RootVariables['a'] = {a};
+History.RootVariables['b'] = {b};
+
+for (int i = 0; i < maxIterations; ++i) {
+    c = (a + b)/2;
+    History.RootVariables['x'].push_back(c);
+    fc = ex_to<numeric>(f_expr.subs(x==c)).to_double();
+
+    if (matchDecimals(c, previous_c, tol)) {
+        History.Root = c;
+        return History;
+    }
+
+    if (fc < 0) a = c;
+    else        b = c;
+    History.RootVariables['a'].push_back(a);
+    History.RootVariables['b'].push_back(b);
+}
+History.Root = History.RootVariables['x'].back();
+```
+
+---
+
+### 3. Secant Method
+### Concept
+
+The secant method approximates the derivative by a finite difference using the two most recent iterates:
+
+$$
+x\_{n+1} = x\_n - \frac{f(x\_n)(x_n - x\_{n-1})}{f(x\_n)-f(x\_{n-1})}
+$$
+```cpp
+x0 = bracket.first;
+x1 = bracket.second;
+History.RootVariables['x'] = {x0, x1};
+
+for (int i = 2; i < maxIterations; ++i) {
+    f0 = f(x_{i-2});
+    f1 = f(x_{i-1});
+    x_new = x1 - f1*(x1 - x0)/(f1 - f0);
+    History.RootVariables['x'].push_back(x_new);
+
+    if (matchDecimals(x_new, x1, tol)) {
+        History.Root = x_new;
+        break;
+    }
+    x0 = x1;
+    x1 = x_new;
+}
+```
+
+---
+
+# Interpolation Methods
+
+## 1. Lagrange Interpolation
+### 1.1. Concept
+
+Given $n+1$ data points $(x_0, y_0), \dots, (x_n, y_n)$, the Lagrange form of the interpolating polynomial is:
+
+$$P(x) \;=\; \sum_{k=0}^{n} y\_k \, L\_k(x)$$
+
+where each basis polynomial $L_k(x)$ is:
+
+$$L\_k(x) \;=\; \prod_{\substack{0 \le m \le n \\ m \neq k}} \frac{x - x_m}{x_k - x_m}
+$$
+
+```cpp
+ex l_n = 1;
+for (size_t m = 0; m < x.size(); ++m) {
+    if (m == n) continue;
+    l_n *= (sym - x[m]) / (x[n] - x[m]);
+}
+
+ex P_ex = 0;
+for (size_t k = 0; k < y.size(); ++k) {
+    P_ex += L_k(sym) * y[k];
+}
+double P_v = numeric(P_ex.subs(sym == x_));
+```
+
+---
+
+## 2. Newton’s Divided‑Difference Table
+
+### 2.1. Concept
+
+The divided‑difference table stores coefficients for Newton’s form. The zeroth-order differences are the original $y-values$:
+
+$$D^{(0)}_i = y_i,\quad i=0,\dots,n.$$
+
+Higher orders are computed by:
+
+$$D^{(k)}\_i = \frac{D^{(k-1)}\_{i+1} - D^{(k-1)}\_{i}}{x\_{i+k} - x\_i},$$
+
+for $k=1,2,\dots,n$.
+
+### 2.2. Implementation Highlights
+
+```cpp
+History.D.push_back(y);           // zeroth order
+for (size_t k = 1; k < x.size(); ++k) {
+    vector<double> d_k(x.size() - k);
+    for (size_t i = 0; i < d_k.size(); ++i) {
+        d_k[i] = (D[k-1][i+1] - D[k-1][i]) / (x[i+k] - x[i]);
+    }
+    History.D.push_back(d_k);
+}
+```
+
+---
+
+## 3. Newton Forward & Backward Interpolation
+
+### 3.1. Forward Newton
+
+The Newton forward polynomial is:
+
+$$P(x)\;=\;\sum\_{k=0}^{n} D^{(k)}\_0 \;\prod\_{i=0}^{k-1} (x - x\_i)$$.
+
+- **Coefficient**: `D[k][0]` (first element of each row)
+    
+- **Term**: product of $((x - x\_0)(x - x\_1)\dots(x - x\_{k-1})$`
+    
+
+**Code Snippet**:
+
+```cpp
+ex P_ex = 0;
+for (size_t k = 0; k < D.size(); ++k) {
+    ex coeff = History.D[k][0];
+    ex term_expr = 1;
+    for (size_t i = 0; i < k; ++i)
+        term_expr *= (sym - x[i]);
+    P_ex += coeff * term_expr;
+}
+```
+
+### 3.2. Backward Newton
+
+The backward form uses the last data point and backward differences:
+
+$$P(x)\;=\;\sum\_{k=0}^{n} D^{(k)}\_{n-k} \;\prod_{i=0}^{k-1} (x - x\_{n-i})$$
+
+- **Coefficient**: `D[k].back()` (last element of each row)
+    
+- **Term**: product of $((x - x\_n)(x - x\_{n-1})\dots(x - x\_{n-k+1})$`
+    
+
+**Code Snippet**:
+
+```cpp
+ex P_ex = 0;
+size_t n = x.size();
+for (size_t k = 0; k < D.size(); ++k) {
+    ex coeff = History.D[k].back();
+    ex term_expr = 1;
+    for (size_t i = 0; i < k; ++i)
+        term_expr *= (sym - x[n-1-i]);
+    P_ex += coeff * term_expr;
+}
+```
 
 ---
 
 ## 📝 TODO
 
--
-
----
-
-## 🤝 Contributing
-
-1. **Fork** & **clone** the project.
-2. Create a **feature branch**: `git checkout -b feature/XYZ`.
-3. **Commit** changes & run `clang-format`.
-4. Push & open a **Pull Request**.
-
-Include unit tests and update documentation for new features.
-
+- [ ] Add integration implementation documentation.
+- [ ] Add Euler  implementation documentation.
+- [ ] Add Curve fitting implementation documentation.
+- [ ]  Add screenshots or example usage scenarios.
 
