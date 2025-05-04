@@ -22,7 +22,7 @@ endif()
 include_directories(${GiNaC_INCLUDE_DIRS})
 
 qt_standard_project_setup()
-
+qt_add_resources(resources.qrc)
 qt_add_executable(Numerical_Analysis
     WIN32 MACOSX_BUNDLE
     main.cpp
@@ -38,8 +38,7 @@ qt_add_executable(Numerical_Analysis
 
     integrationmethods.h
     integrationmethods.cpp
-
-
+    resources.qrc
 
 )
 
