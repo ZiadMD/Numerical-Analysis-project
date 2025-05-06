@@ -24,7 +24,7 @@ public:
 
 private slots:
 
-    void on_TablePoints_valueChanged(int arg1);
+    void on_TablePoints_valueChanged(int points);
 
     void on_RootPageBtn_clicked();
 
@@ -39,6 +39,10 @@ private slots:
     void on_RootSolveButton_clicked();
 
     void on_InterpolationSolveButton_clicked();
+
+    void on_IntSolveButton_clicked();
+
+    void on_StepsInput_valueChanged(int steps);
 
 private:
     Ui::MainWindow *ui;

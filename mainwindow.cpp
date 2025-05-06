@@ -1,6 +1,11 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QStandardItemModel>
+#include <QStandardItem>
+
+static QStandardItem* comboItem(QComboBox *combo, int index);
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -15,10 +20,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_TablePoints_valueChanged(int arg1)
-{
-    ui->InterpolationTable->setColumnCount(arg1);
-}
+///////////////////////////////////////////////////////////////////////////  Menu Buttons  //////////////////////////////////////////////////////
 
 void MainWindow::on_RootPageBtn_clicked()
 {
@@ -48,6 +50,11 @@ void MainWindow::on_IntegerationPageBtn_clicked()
     ui->InterpolationPageBtn->setFlat(1);
     ui->EulerPageBtn->setFlat(1);
     ui->CurveFittingPageBtn->setFlat(1);
+
+    for (int i = 1; i <= 3; ++i) {
+        if (auto *item = comboItem(ui->IntMethodSelector, i))
+            item->setEnabled(false);
+    }
 }
 
 void MainWindow::on_EulerPageBtn_clicked()
@@ -70,168 +77,135 @@ void MainWindow::on_CurveFittingPageBtn_clicked()
     ui->CurveFittingPageBtn->setFlat(0);
 }
 
+///////////////////////////////////////////////////////////////////////////      Root      //////////////////////////////////////////////////////////////
+
+/**
+ * @brief Handles the “Solve Root” button click.
+ *
+ * Reads the user’s function f(x) and tolerance, chooses the selected method
+ * (Bisection, Secant, or Newton), computes the root, and populates the UI
+ * with the result table and info text.
+ *
+ * @note Assumes `RootSolver` is a utility with methods:
+ *       - make_full_parser(symbol): returns a parser for expressions in x
+ *       - findBracket(fx, x, a, b): finds [a,b] where sign(f(a))≠sign(f(b))
+ *       - bisectionMethod, secantMethod, newtonMethod → each returns a
+ *         `RootReturn` struct containing:
+ *           · double Root            – the computed root
+ *           · map<char,vector<double>> RootVariables
+ *             (keys 'a','b','x' as needed) – iteration history
+ *
+ * @throws Displays a QMessageBox warning if:
+ *         - The equation field is empty
+ *         - No method is selected
+ *         - The parser can’t understand the equation
+ */
 void MainWindow::on_RootSolveButton_clicked()
 {
-    if (ui->RootEQInput->text().isEmpty()) {
-        QMessageBox::warning(this, "Empty Equation", "     Please Enter F(x)!      ");
+    // 1. Validate inputs
+    const QString eqText = ui->RootEQInput->text();
+    if (eqText.isEmpty()) {
+        QMessageBox::warning(this, "Empty Equation", "Please enter F(x)!");
+        return;
+    }
+    const int methodIndex = ui->MethodSelector->currentIndex();
+    if (methodIndex == 0) {
+        QMessageBox::warning(this, "Empty Method", "Please choose a method!");
+        return;
+    }
 
-    } else {
-        if (ui->MethodSelector->currentIndex() == 0) {
-            QMessageBox::warning(this, "Empty Method", "  Please Choose a Method!  ");
+    // 2. Parse equation
+    const std::string eqString = eqText.toStdString();
+    symbol x("x");
+    parser p = RootSolver.make_full_parser(x);
+    ex fx;
+    try {
+        fx = p(eqString);
+    }
+    catch (const std::exception&) {
+        QMessageBox::warning(this, "Unsupported", "Wrong or unsupported equation!");
+        return;
+    }
 
-        } else {
-            string eq = ui->RootEQInput->text().toStdString();
-            int tol_ = ui->RootTol->value();
-            symbol x("x");
-            parser p = RootSolver.make_full_parser(x);
-            ex fx;
+    // 3. Locate bracket [a,b]
+    auto bracket = RootSolver.findBracket(fx, x, 0.0, 100.0);
 
-            try {
-                fx = p(eq);
-            } catch (const exception &e) {
-                QMessageBox::warning(this, "Unspported", "Wrong or Unspported Equation!");
-                return;
-            }
-            auto bracket = RootSolver.findBracket(fx, x, 0, 100);
-            setprecision(tol_);
-            RootReturn root;
+    // 4. Solve using the chosen method
+    const int tol      = ui->RootTol->value();
+    RootReturn rootRes;
+    switch (methodIndex) {
+    case 1:  // Bisection
+        rootRes = RootSolver.bisectionMethod(fx, x, bracket, tol, 100);
+        break;
+    case 2:  // Secant
+        rootRes = RootSolver.secantMethod(fx, x, bracket, tol, 100);
+        break;
+    case 3:  // Newton
+        // Precompute derivative (for info display)
+        diff(fx, x);
+        rootRes = RootSolver.newtonMethod(fx, x, bracket, tol, 100);
+        break;
+    default:
+        return; // should never happen
+    }
 
-            int method = ui->MethodSelector->currentIndex();
+    // 5. Display root
+    ui->RootLabel->setText(QString::number(rootRes.Root));
 
-            if (method == 1) {
-                root = RootSolver.bisectionMethod(fx, x, bracket, tol_, 100);
-                ui->RootLabel->setText(QString::number(root.Root));
-
-                ui->RootTable->setColumnCount(3);
-                QStringList headers;
-                headers << "a" << "b" << "c";
-                headers << "d";
-                ui->RootTable->setHorizontalHeaderLabels(headers);
-                ui->RootTable->horizontalHeader()->setStretchLastSection(0);
-
-                // Get vectors from RootReturn
-                const std::vector<double> &a_values = root.RootVariables['a'];
-                const std::vector<double> &b_values = root.RootVariables['b'];
-                const std::vector<double> &x_values = root.RootVariables['x'];
-
-                // Determine row count (use the smallest size to avoid out-of-range)
-                int rowCount = std::min({a_values.size(), b_values.size(), x_values.size()});
-                ui->RootTable->setRowCount(rowCount);
-                std::cout << std::fixed << std::setprecision(17);
-                // Fill table
-                for (int i = 0; i < rowCount; ++i) {
-                    ui->RootTable->setItem(i,
-                                           0,
-                                           new QTableWidgetItem(
-                                               QString::number(a_values[i], 'f', max(5, tol_))));
-                    ui->RootTable->setItem(i,
-                                           1,
-                                           new QTableWidgetItem(
-                                               QString::number(b_values[i], 'f', max(5, tol_))));
-                    ui->RootTable->setItem(i,
-                                           2,
-                                           new QTableWidgetItem(
-                                               QString::number(x_values[i], 'f', max(5, tol_))));
-                }
-
-                //Fill info
-                string info;
-                info = "Sign changed between:\n";
-                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second)
-                        + "\n";
-                info += "Method Took " + to_string(x_values.size())
-                        + " iterations to find the root.\n";
-
-                ui->RootInfo->setPlainText(QString::fromStdString(info));
-            }
-
-            if (method == 2) {
-                root = RootSolver.secantMethod(fx, x, bracket, tol_, 100);
-                ui->RootLabel->setText(QString::number(root.Root));
-
-                ui->RootTable->setColumnCount(2);
-                QStringList headers;
-                headers << "x" << "value";
-                ui->RootTable->setHorizontalHeaderLabels(headers);
-                ui->RootTable->horizontalHeader()->setStretchLastSection(1);
-
-                // Get vectors from RootReturn
-                const std::vector<double> &x_values = root.RootVariables['x'];
-
-                // Determine row count (use the smallest size to avoid out-of-range)
-                int rowCount = x_values.size();
-                ui->RootTable->setRowCount(rowCount);
-
-                // Fill table
-                for (int i = 0; i < rowCount; ++i) {
-                    ui->RootTable->setItem(i,
-                                           0,
-                                           new QTableWidgetItem(
-                                               QString::fromStdString("x" + to_string(i))));
-                    ui->RootTable->setItem(i,
-                                           1,
-                                           new QTableWidgetItem(
-                                               QString::number(x_values[i], 'f', max(5, tol_))));
-                }
-
-                //Fill info
-                string info;
-                info = "Sign changed between:\n";
-                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second)
-                        + "\n";
-                info += "Method Took " + to_string(x_values.size())
-                        + " iterations to find the root.\n";
-
-                ui->RootInfo->setPlainText(QString::fromStdString(info));
-            }
-
-            if (method == 3) {
-                ex df_expr = diff(fx, x);
-
-                root = RootSolver.newtonMethod(fx, x, bracket, tol_, 100);
-                ui->RootLabel->setText(QString::number(root.Root));
-
-                ui->RootTable->setColumnCount(2);
-                QStringList headers;
-                headers << "x" << "value";
-                ui->RootTable->setHorizontalHeaderLabels(headers);
-                ui->RootTable->horizontalHeader()->setStretchLastSection(1);
-
-                // Get vectors from RootReturn
-                const std::vector<double> &x_values = root.RootVariables['x'];
-
-                // Determine row count (use the smallest size to avoid out-of-range)
-                int rowCount = x_values.size();
-                ui->RootTable->setRowCount(rowCount);
-
-                // Fill table
-                for (int i = 0; i < rowCount; ++i) {
-                    ui->RootTable->setItem(i,
-                                           0,
-                                           new QTableWidgetItem(
-                                               QString::fromStdString("x" + to_string(i))));
-                    ui->RootTable->setItem(i,
-                                           1,
-                                           new QTableWidgetItem(
-                                               QString::number(x_values[i], 'f', max(5, tol_))));
-                }
-
-                //Fill info
-                string info;
-                info = "Sign changed between:\n";
-                info += "a = " + to_string(bracket.first) + " and b = " + to_string(bracket.second)
-                        + "\n\n";
-                info += "Method Took " + to_string(x_values.size())
-                        + " iterations to find the root.\n";
-                std::ostringstream oss;
-                oss << df_expr;
-                info += "\n\n dfx = " + oss.str() + "\n";
-                ui->RootInfo->setPlainText(QString::fromStdString(info));
-            }
+    // 6. Build iteration table
+    // Decide columns based on method
+    if (methodIndex == 1) {
+        // Bisection: columns a, b, c (midpoint)
+        ui->RootTable->setColumnCount(3);
+        ui->RootTable->setHorizontalHeaderLabels({"a", "b", "c"});
+        const auto &A = rootRes.RootVariables.at('a');
+        const auto &B = rootRes.RootVariables.at('b');
+        const auto &C = rootRes.RootVariables.at('x');
+        const int rows = std::min({A.size(), B.size(), C.size()});
+        ui->RootTable->setRowCount(rows);
+        for (int i = 0; i < rows; ++i) {
+            ui->RootTable->setItem(i, 0, new QTableWidgetItem(
+                                             QString::number(A[i], 'f', std::max(5, tol))));
+            ui->RootTable->setItem(i, 1, new QTableWidgetItem(
+                                             QString::number(B[i], 'f', std::max(5, tol))));
+            ui->RootTable->setItem(i, 2, new QTableWidgetItem(
+                                             QString::number(C[i], 'f', std::max(5, tol))));
         }
     }
+    else {
+        // Secant & Newton: columns iteration, x
+        ui->RootTable->setColumnCount(2);
+        ui->RootTable->setHorizontalHeaderLabels({"Iter", "x"});
+        const auto &X = rootRes.RootVariables.at('x');
+        const int rows = X.size();
+        ui->RootTable->setRowCount(rows);
+        for (int i = 0; i < rows; ++i) {
+            ui->RootTable->setItem(i, 0, new QTableWidgetItem(
+                                             QString::number(i)));
+            ui->RootTable->setItem(i, 1, new QTableWidgetItem(
+                                             QString::number(X[i], 'f', std::max(5, tol))));
+        }
+    }
+    ui->RootTable->horizontalHeader()->setStretchLastSection(true);
+
+    // 7. Show info summary
+    std::ostringstream info;
+    info << "Bracket: [" << bracket.first << ", " << bracket.second << "]\n"
+         << "Iterations: " << rootRes.RootVariables.at('x').size() << "\n";
+    if (methodIndex == 3) {
+        // Append derivative expression for Newton
+        ex df = diff(fx, x);
+        info << "f'(x) = " << df << "\n";
+    }
+    ui->RootInfo->setPlainText(QString::fromStdString(info.str()));
 }
 
+/////////////////////////////////////////////////////////////////////////// Interpolation //////////////////////////////////////////////////////////////
+
+void MainWindow::on_TablePoints_valueChanged(int points)
+{
+    ui->InterpolationTable->setColumnCount(points);
+}
 
 void MainWindow::on_InterpolationSolveButton_clicked()
 {
@@ -421,5 +395,28 @@ void MainWindow::on_InterpolationSolveButton_clicked()
     }
 
 
+}
+
+///////////////////////////////////////////////////////////////////////////  Integration  //////////////////////////////////////////////////////////////
+
+void MainWindow::on_IntSolveButton_clicked()
+{
+    // Handling Embty or Invalid Input
+
+}
+
+static QStandardItem* comboItem(QComboBox *combo, int index) {
+    if (auto *m = qobject_cast<QStandardItemModel*>(combo->model()))
+        return m->item(index);
+    return nullptr;
+}
+
+void MainWindow::on_StepsInput_valueChanged(int steps)
+{
+    if (auto *combo = ui->IntMethodSelector) {
+        if (auto *item1 = comboItem(combo, 1)) item1->setEnabled(steps >= 1);
+        if (auto *item2 = comboItem(combo, 2)) item2->setEnabled(steps % 2 == 1);
+        if (auto *item3 = comboItem(combo, 3)) item3->setEnabled(steps % 3 == 0);
+    }
 }
 
