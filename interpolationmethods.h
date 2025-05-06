@@ -7,7 +7,7 @@
 using namespace std;
 using namespace GiNaC;
 
-struct InterpolationReturn{
+struct InterpolationResult{
     vector<pair<ex, double>> L; // Lagranch L experions, value
     vector<vector<double>> D; // For Newton Methods
     pair<ex, double> P;
@@ -16,14 +16,14 @@ struct InterpolationReturn{
 class InterpolationMethods
 {
 public:
-    InterpolationReturn lagrangeInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym);
+    InterpolationResult lagrangeInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym);
 
-    InterpolationReturn newtonForwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym);
+    InterpolationResult newtonForwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym);
 
-    InterpolationReturn newtonBackwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym);
+    InterpolationResult newtonBackwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym);
 private:
 
-    InterpolationReturn NewtonTable(const vector<double> &x, const std::vector<double> &y);
+    InterpolationResult NewtonTable(const vector<double> &x, const std::vector<double> &y);
 };
 
 #endif // INTERPOLATIONMETHODS_H

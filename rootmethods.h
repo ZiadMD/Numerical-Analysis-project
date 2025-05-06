@@ -14,7 +14,7 @@
 using namespace std;
 using namespace GiNaC;
 
-struct RootReturn
+struct RootResult
 {
     map<char, vector<double>> RootVariables;
     double Root;
@@ -35,17 +35,17 @@ public:
     double findInitialGuess(const pair<double, double> &bracket);
 
     // —————— ROOT-FINDERS ——————
-    RootReturn newtonMethod(const ex &f_expr,
+    RootResult newtonMethod(const ex &f_expr,
                             symbol x,
                             pair<double, double> &bracket,
                             double tol,
                             int maxIterations = 100);
-    RootReturn bisectionMethod(const ex &f_expr,
+    RootResult bisectionMethod(const ex &f_expr,
                                symbol x,
                                pair<double, double> &bracket,
                                double tol,
                                int maxIterations = 100);
-    RootReturn secantMethod(const ex &f_expr,
+    RootResult secantMethod(const ex &f_expr,
                             symbol x,
                             pair<double, double> &bracket,
                             double tol,

@@ -1,8 +1,8 @@
 #include "interpolationmethods.h"
 
-InterpolationReturn InterpolationMethods::lagrangeInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
+InterpolationResult InterpolationMethods::lagrangeInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
-    InterpolationReturn History;
+    InterpolationResult History;
     for (int n = 0; n < x.size(); ++n) {
         ex l_n = 1;
         for (int m = 0; m < x.size(); ++m) {
@@ -27,9 +27,9 @@ InterpolationReturn InterpolationMethods::lagrangeInterpolation(const vector<dou
     return History;
 }
 
-InterpolationReturn InterpolationMethods::newtonForwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
+InterpolationResult InterpolationMethods::newtonForwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
-    InterpolationReturn History = NewtonTable(x,y);
+    InterpolationResult History = NewtonTable(x,y);
 
     ex P_ex = 0;
     for (int term = 0; term < History.D.size(); ++term) {
@@ -49,9 +49,9 @@ InterpolationReturn InterpolationMethods::newtonForwardInterpolation(const vecto
     return History;
 }
 
-InterpolationReturn InterpolationMethods::newtonBackwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
+InterpolationResult InterpolationMethods::newtonBackwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
-    InterpolationReturn History = NewtonTable(x,y);
+    InterpolationResult History = NewtonTable(x,y);
     ex P_ex;
     for (int term = 0; term < History.D.size(); ++term) {
         ex temp = 1;
@@ -69,9 +69,9 @@ InterpolationReturn InterpolationMethods::newtonBackwardInterpolation(const vect
     return History;
 }
 
-InterpolationReturn InterpolationMethods::NewtonTable(const vector<double> &x, const std::vector<double> &y)
+InterpolationResult InterpolationMethods::NewtonTable(const vector<double> &x, const std::vector<double> &y)
 {
-    InterpolationReturn History;
+    InterpolationResult History;
     History.D.push_back(y);
     for (int n = 1; n < x.size(); ++n) {
         vector<double> dn(x.size() - n);

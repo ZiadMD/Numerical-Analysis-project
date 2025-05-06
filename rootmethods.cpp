@@ -67,10 +67,10 @@ double RootMethods::findInitialGuess(const pair<double, double> &bracket)
 
     return (bracket.first + bracket.second) / 2.0;
 }
-RootReturn RootMethods::newtonMethod(
+RootResult RootMethods::newtonMethod(
     const ex &f_expr, symbol x, pair<double, double> &bracket, double tol, int maxIterations)
 {
-    RootReturn History;
+    RootResult History;
     History.RootVariables['x'].push_back(findInitialGuess(bracket));
     if (isnan(History.RootVariables['x'][0])) {
         cerr << "Cannot proceed without a valid initial guess.\n";
@@ -99,10 +99,10 @@ RootReturn RootMethods::newtonMethod(
     return History;
 }
 
-RootReturn RootMethods::bisectionMethod(
+RootResult RootMethods::bisectionMethod(
     const ex &f_expr, symbol x, pair<double, double> &bracket, double tol, int maxIterations)
 {
-    RootReturn History;
+    RootResult History;
 
     // Safety: check initial values
     if (isnan(bracket.first) || isnan(bracket.second)) {
@@ -163,10 +163,10 @@ RootReturn RootMethods::bisectionMethod(
     return History;
 }
 
-RootReturn RootMethods::secantMethod(
+RootResult RootMethods::secantMethod(
     const ex &f_expr, symbol x, pair<double, double> &bracket, double tol, int maxIterations)
 {
-    RootReturn History;
+    RootResult History;
     History.RootVariables['x'].push_back(bracket.first);
     History.RootVariables['x'].push_back(bracket.second);
 
