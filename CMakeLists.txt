@@ -38,7 +38,12 @@ qt_add_executable(Numerical_Analysis
 
     integrationmethods.h
     integrationmethods.cpp
+
     resources.qrc
+
+    eulermethods.h
+    eulermethods.cpp
+    curvefitting.h curvefitting.cpp
 
 )
 
