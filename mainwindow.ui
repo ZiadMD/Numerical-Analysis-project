@@ -270,6 +270,9 @@
           <height>361</height>
          </rect>
         </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
         <property name="plainText">
          <string/>
         </property>
@@ -618,6 +621,9 @@
           <height>251</height>
          </rect>
         </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
        </widget>
       </widget>
       <widget class="QGroupBox" name="Answer">
@@ -860,7 +866,7 @@
        <rect>
         <x>10</x>
         <y>160</y>
-        <width>841</width>
+        <width>851</width>
         <height>431</height>
        </rect>
       </property>
@@ -874,9 +880,9 @@
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
-         <width>821</width>
-         <height>141</height>
+         <y>20</y>
+         <width>831</width>
+         <height>151</height>
         </rect>
        </property>
        <property name="title">
@@ -885,13 +891,13 @@
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
        </property>
-       <widget class="QTableWidget" name="IntTableValues">
+       <widget class="QTableWidget" name="IntTable">
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>30</y>
-          <width>801</width>
-          <height>101</height>
+          <y>20</y>
+          <width>811</width>
+          <height>121</height>
          </rect>
         </property>
         <property name="layoutDirection">
@@ -934,6 +940,61 @@
           <string>F(X)</string>
          </property>
         </row>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_20">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>170</y>
+         <width>831</width>
+         <height>161</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Info</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QTextEdit" name="IntInfo">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>20</y>
+          <width>811</width>
+          <height>131</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_21">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>330</y>
+         <width>831</width>
+         <height>91</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Answer</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
+       <widget class="QLabel" name="IntLabel">
+        <property name="geometry">
+         <rect>
+          <x>16</x>
+          <y>36</y>
+          <width>801</width>
+          <height>41</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
        </widget>
       </widget>
      </widget>
@@ -1367,8 +1428,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <rect>
          <x>10</x>
          <y>140</y>
-         <width>151</width>
-         <height>71</height>
+         <width>161</width>
+         <height>70</height>
         </rect>
        </property>
        <property name="title">
@@ -1377,35 +1438,25 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
-       <widget class="QLabel" name="label_5">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>20</y>
-          <width>131</width>
-          <height>41</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>Points:</string>
-        </property>
-       </widget>
-       <widget class="QSpinBox" name="CurveTablePoints">
-        <property name="geometry">
-         <rect>
-          <x>80</x>
-          <y>30</y>
-          <width>44</width>
-          <height>26</height>
-         </rect>
-        </property>
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-        </property>
-        <property name="minimum">
-         <number>2</number>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_5">
+          <property name="text">
+           <string>Points:</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="CurveTablePoints">
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+          </property>
+          <property name="minimum">
+           <number>2</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
       <widget class="QPushButton" name="InterpolationSolveButton_2">
        <property name="geometry">
@@ -1495,8 +1546,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <rect>
          <x>180</x>
          <y>140</y>
-         <width>131</width>
-         <height>71</height>
+         <width>181</width>
+         <height>70</height>
         </rect>
        </property>
        <property name="title">
@@ -1505,22 +1556,18 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
-       <widget class="QDoubleSpinBox" name="PolyDegree">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>101</width>
-          <height>31</height>
-         </rect>
-        </property>
-        <property name="buttonSymbols">
-         <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
-        </property>
-        <property name="minimum">
-         <double>-1.000000000000000</double>
-        </property>
-       </widget>
+       <layout class="QGridLayout" name="gridLayout">
+        <item row="0" column="0">
+         <widget class="QDoubleSpinBox" name="PolyDegree">
+          <property name="buttonSymbols">
+           <enum>QAbstractSpinBox::ButtonSymbols::PlusMinus</enum>
+          </property>
+          <property name="minimum">
+           <double>-1.000000000000000</double>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_18">

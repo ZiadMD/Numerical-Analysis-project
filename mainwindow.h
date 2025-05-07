@@ -6,6 +6,8 @@
 
 #include "rootmethods.h"
 #include "interpolationmethods.h"
+#include "integrationmethods.h"
+
 
 
 QT_BEGIN_NAMESPACE
@@ -46,7 +48,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
+
     RootMethods RootSolver;
     InterpolationMethods InterpolSolver;
+    IntegrationMethods IntegrSolver;
 };
 #endif // MAINWINDOW_H

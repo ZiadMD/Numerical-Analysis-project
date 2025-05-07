@@ -11,8 +11,12 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
     , RootSolver(RootMethods())
     , InterpolSolver(InterpolationMethods())
+    , IntegrSolver(IntegrationMethods())
+
 {
     ui->setupUi(this);
+
+
 }
 
 MainWindow::~MainWindow()
@@ -132,7 +136,7 @@ void MainWindow::on_RootSolveButton_clicked()
 
     // 4. Solve using the chosen method
     const int tol      = ui->RootTol->value();
-    RootReturn rootRes;
+    RootResult rootRes;
     switch (methodIndex) {
     case 1:  // Bisection
         rootRes = RootSolver.bisectionMethod(fx, x, bracket, tol, 100);
@@ -253,17 +257,17 @@ void MainWindow::on_InterpolationSolveButton_clicked()
 
     double solve_x = ui->InterpolationX->value();
 
-    if(solve_x > x_max || solve_x < x_min){
-        QString Warning = QString::fromStdString("enter a valid number between " + to_string(x_min) + " and " + to_string(x_max) + " .");
-        QMessageBox::warning(this, "Out of range", Warning);
-        return;
-    }
+    // if(solve_x > x_max || solve_x < x_min){
+    //     QString Warning = QString::fromStdString("enter a valid number between " + to_string(x_min) + " and " + to_string(x_max) + " .");
+    //     QMessageBox::warning(this, "Out of range", Warning);
+    //     return;
+    // }
 
     auto *ansTable = ui->InterpolAnsTable;
     symbol sym("x");
 
     if(MethodIndex == 1){ // Lagranch
-        InterpolationReturn Sol = InterpolSolver.lagrangeInterpolation(x,y,solve_x,sym);
+        InterpolationResult Sol = InterpolSolver.lagrangeInterpolation(x,y,solve_x,sym);
 
 
         ansTable->setColumnCount(3);
@@ -296,7 +300,7 @@ void MainWindow::on_InterpolationSolveButton_clicked()
     }
 
     if (MethodIndex == 2){
-        InterpolationReturn Sol = InterpolSolver.newtonForwardInterpolation(x,y,solve_x,sym);
+        InterpolationResult Sol = InterpolSolver.newtonForwardInterpolation(x,y,solve_x,sym);
 
         ansTable->setColumnCount(Sol.D.size()+1);
         QStringList header = {"x", "y"};
@@ -346,7 +350,7 @@ void MainWindow::on_InterpolationSolveButton_clicked()
     }
 
     if(MethodIndex == 3){
-        InterpolationReturn Sol = InterpolSolver.newtonBackwardInterpolation(x,y,solve_x,sym);
+        InterpolationResult Sol = InterpolSolver.newtonBackwardInterpolation(x,y,solve_x,sym);
 
         ansTable->setColumnCount(Sol.D.size()+1);
         QStringList header = {"x", "y"};
@@ -399,20 +403,119 @@ void MainWindow::on_InterpolationSolveButton_clicked()
 
 ///////////////////////////////////////////////////////////////////////////  Integration  //////////////////////////////////////////////////////////////
 
-void MainWindow::on_IntSolveButton_clicked()
-{
-    // Handling Embty or Invalid Input
-
-}
-
 static QStandardItem* comboItem(QComboBox *combo, int index) {
     if (auto *m = qobject_cast<QStandardItemModel*>(combo->model()))
         return m->item(index);
     return nullptr;
 }
 
+void MainWindow::on_IntSolveButton_clicked()
+{
+    // Handling Embty or Invalid Input
+    const QString eqText = ui->IntEQInput->text();
+    if (eqText.isEmpty()) {
+        QMessageBox::warning(this, "Empty Equation", "Please enter F(x)!");
+        return;
+    }
+
+    const int methodIndex = ui->IntMethodSelector->currentIndex();
+    if (methodIndex == 0) {
+        QMessageBox::warning(this, "Empty Method", "Please choose a method!");
+        return;
+    }
+
+    int a, b, n;
+    a = ui->LowerBoundInput->value();
+    b = ui->UpperBoundInput->value();
+    n = ui->StepsInput->value();
+
+    if (n <= 0){
+        QMessageBox::warning(this, "Invalid Input", "Enter a Valid Steps Value!  ");
+        return;
+    }
+
+    if(a >= b){
+        QMessageBox::warning(this, "Invalid Input", "Lower Bound should be less than Upper Bound!  ");
+        return;
+    }
+
+
+    // 2. Parse equation
+    const std::string eqString = eqText.toStdString();
+    symbol x("x");
+    parser p = RootSolver.make_full_parser(x);
+    ex fx;
+
+    try {
+        fx = p(eqString);
+    }
+    catch (const std::exception&) {
+        QMessageBox::warning(this, "Unsupported", "Wrong or unsupported equation!");
+        return;
+    }
+
+    IntegrationResult Result;
+
+    switch (methodIndex) {
+    case 1:
+        Result = IntegrSolver.trapezoidal(fx, x, a, b, n);
+        break;
+    case 2:
+        Result = IntegrSolver.simpsonOneThird(fx, x, a, b, n);
+        break;
+    case 3:
+        Result = IntegrSolver.simpsonThreeEighth(fx, x, a, b, n);
+    default:
+        break;
+    }
+
+    QTableWidget *table = ui->IntTable;
+    table->clearContents();
+
+    // 2 rows: one for x, one for f(x)
+    int m = static_cast<int>(Result.X.size());
+    table->setRowCount(2);
+    table->setColumnCount(m);
+
+    // Label the rows “x” and “f(x)”
+    table->setVerticalHeaderLabels({ "x", "f(x)" });
+
+    // (Optionally) label each column by its index or x-value
+    QStringList colLabels;
+    colLabels.reserve(m);
+    for (int j = 0; j < m; ++j) {
+        // e.g. label by index:
+        colLabels << QString::number(j);
+        // or if you prefer to show the x-value as header:
+        // colLabels << QString::number(Result.X[j], 'g', 6);
+    }
+    table->setHorizontalHeaderLabels(colLabels);
+
+    // Fill row 0 with all the x’s, row 1 with all the f(x)’s
+    for (int j = 0; j < m; ++j) {
+        table->setItem(0, j, new QTableWidgetItem(QString::number(Result.X[j])));
+        table->setItem(1, j, new QTableWidgetItem(QString::number(Result.FX[j])));
+    }
+
+    // Stretch so it fills the width nicely
+    table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    table->verticalHeader()  ->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    ui->IntLabel->setText(QString::number(Result.I, 'g', 10));
+
+    // 6. Show summary info
+    QString info;
+    info += "Method: " + ui->MethodSelector->currentText() + "\n";
+    info += "Intervals (n): " + QString::number(n) + "\n";
+    info += "Step size (h): " + QString::number(Result.h, 'g', 10) + "\n";
+    info += "Integral ≈ " + QString::number(Result.I, 'g', 10) + "\n";
+    ui->IntInfo->setPlainText(info);
+}
+
+
 void MainWindow::on_StepsInput_valueChanged(int steps)
 {
+    ui->IntMethodSelector->setCurrentIndex(0);
     if (auto *combo = ui->IntMethodSelector) {
         if (auto *item1 = comboItem(combo, 1)) item1->setEnabled(steps >= 1);
         if (auto *item2 = comboItem(combo, 2)) item2->setEnabled(steps % 2 == 1);

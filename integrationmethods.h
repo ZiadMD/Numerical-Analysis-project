@@ -5,21 +5,21 @@
 
 using namespace std;
 using namespace GiNaC;
-struct IntegrationReturn
+
+struct IntegrationResult
 {
     vector<double> X;
     vector<double> FX;
-    ex fx;
     double h;
     double I;
 };
+
 class IntegrationMethods
 {
-    ex str2ex(const string &fx);
 public:
-    IntegrationReturn trapezoidal(const string &fx, symbol x, double a, double b, int n = 100);
-    IntegrationReturn simpsonOneThird(const string &f_expr, symbol x, double a, double b, int n = 100);
-    IntegrationReturn simpsonThreeEighth(const string &f_expr, symbol x, double a, double b, int n = 99);
+    IntegrationResult trapezoidal(const ex &fx, symbol x, double a, double b, int n = 100);
+    IntegrationResult simpsonOneThird(const ex &f_expr, symbol x, double a, double b, int n = 100);
+    IntegrationResult simpsonThreeEighth(const ex &f_expr, symbol x, double a, double b, int n = 99);
 };
 
 #endif // INTEGRATIONMETHODS_H

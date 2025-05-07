@@ -24,14 +24,13 @@ class RootMethods
 {
 public:
     // —————— PARSER SETUP ——————
-    // Returns a GiNaC parser with x, common constants, and all
-    // standard math functions (exp, log/ln, trig, sqrt, min/max, etc.)
     static parser make_full_parser(const symbol &x);
 
     // —————— UTILITY ——————
     bool matchDecimals(double a, double b, double tol = 1e-6);
-    pair<double, double> findBracket(
-        const ex &f_expr, symbol x, double start, double end, double step = 1);
+
+    pair<double, double> findBracket(const ex &f_expr, symbol x, double start, double end, double step = 1);
+
     double findInitialGuess(const pair<double, double> &bracket);
 
     // —————— ROOT-FINDERS ——————
@@ -40,11 +39,13 @@ public:
                             pair<double, double> &bracket,
                             double tol,
                             int maxIterations = 100);
+
     RootResult bisectionMethod(const ex &f_expr,
                                symbol x,
                                pair<double, double> &bracket,
                                double tol,
                                int maxIterations = 100);
+
     RootResult secantMethod(const ex &f_expr,
                             symbol x,
                             pair<double, double> &bracket,
