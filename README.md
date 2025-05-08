@@ -283,12 +283,92 @@ for (size_t k = 0; k < D.size(); ++k) {
     P_ex += coeff * term_expr;
 }
 ```
+---
+# Integration Methods
+
+This section explains the algorithms and implementations of numerical integration techniques:
+
+### 1. Composite Trapezoidal Rule
+
+#### Concept
+
+Approximate the area under $f(x)$ on $[a,b]$ by dividing it into $n$ equal sub intervals of width $h=\frac{b-a}{n}$, then summing trapezoids:
+
+$$I = \frac{h}{2}\Bigl[f(a) + f(b) + 2\sum\_{i=1}^{n-1} f\bigl(a + i*h\bigr)\Bigr].
+$$
+```cpp
+IntegrationResult IntegrationMethods::trapezoidal(const ex &f_expr, symbol x, double a, double b, int n)
+{
+    IntegrationResult Result = StartingTable(f_expr, x, a, b, n);
+
+    double Sum = 0;
+    for(int i = 1; i < Result.FX.size()-1; ++i){
+        Sum += Result.FX[i];
+    }
+
+    Result.I = (Result.h / 2) * (Result.FX.front() + Result.FX.back() + 2 * Sum);
+
+    return Result;
+}
+```
+
+---
+
+### 2. Composite Simpson’s 1/3 Rule
+
+#### Concept
+
+Use parabolic arcs on pairs of sub intervals (requires even $n$):
+
+$$I \approx \frac{h}{3} \left(f(x\_0) + 4 \sum\_{i=1, \text{odd}}^{n-1} f(x\_i) + 2 \sum\_{i=2, \text{even}}^{n-2} f(x\_i) + f(x\_n)\right)$$
+
+```cpp
+IntegrationResult IntegrationMethods::simpsonOneThird(const ex &f_expr, symbol x, double a, double b, int n)
+{
+    IntegrationResult Result = StartingTable(f_expr, x, a, b, n);
+    double Sum_odd = 0,
+           Sum_even = 0;
+    for(int i = 1; i < Result.FX.size()-1; ++i){
+        Sum_even += (i % 2 == 0 ? Result.FX[i] : 0);
+        Sum_odd += (i % 2 == 1 ? Result.FX[i] : 0);
+    }
+
+    Result.I = (Result.h / 3) * (Result.FX.front() + Result.FX.back() + (2 * Sum_even) + (4 * Sum_odd));
+
+    return Result;
+}
+``` 
+
+---
+### 3. Composite Simpson’s 3/8 Rule 
+#### Concept
+Divide interval into $n$ subintervals where $n$ is a multiple of 3, width $h=\frac{b-a}{n}$:  = 
+
+$$I \approx \frac{3h}{8} \left(f(x\_0) + 3 \sum\_{\text{not multiple of 3}} f(x\_i) + 2 \sum\_{\text{multiple of 3}} f(x\_i) + f(x\_n)\right)
+$$
+
+```cpp
+IntegrationResult IntegrationMethods::simpsonThreeEighth(const ex &f_expr, symbol x, double a, double b, int n)
+{
+    IntegrationResult Result = StartingTable(f_expr, x, a, b, n);
+    double Sum_third = 0,
+           Sum_norm = 0;
+    for(int i = 1; i < Result.FX.size()-1; ++i){
+        Sum_third += (i % 3 == 0 ? Result.FX[i] : 0);
+        Sum_norm += (i % 3 != 0 ? Result.FX[i] : 0);
+    }
+
+    Result.I = ((3 *Result.h) / 8) * (Result.FX.front() + Result.FX.back() + (2 * Sum_third) + (3 * Sum_norm));
+
+    return Result;
+}
+```
 
 ---
 
 ## 📝 TODO
 
-- [ ] Add integration implementation documentation.
+- [X] Add integration implementation documentation.
 - [ ] Add Euler  implementation documentation.
 - [ ] Add Curve fitting implementation documentation.
 - [ ]  Add screenshots or example usage scenarios.
