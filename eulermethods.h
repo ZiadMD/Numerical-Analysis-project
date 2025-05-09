@@ -3,6 +3,8 @@
 
 #include <ginac/ginac.h>
 
+
+
 using namespace std;
 using namespace GiNaC;
 
@@ -26,7 +28,7 @@ public:
     EulerResult Euler(const ex &fxy, symbol x, symbol y, double x0, double y0, pair<double, double> x_, double h);
 
     EulerResult ModifiedEuler(const ex &fxy, symbol x, symbol y, double x0, double y0, double x_, double h);
-    EulerResult ModifiedEuler(const ex &fxy, symbol x, symbol y, double x0, double y0, pair<double, double> x_, double h);
+    // EulerResult ModifiedEuler(const ex &fxy, symbol x, symbol y, double x0, double y0, pair<double, double> x_, double h);
 
 };
 
