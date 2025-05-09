@@ -40,7 +40,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>3</number>
+     <number>4</number>
     </property>
     <widget class="QWidget" name="RootPage">
      <widget class="QGroupBox" name="groupBox_2">
@@ -1414,7 +1414,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <x>10</x>
         <y>10</y>
         <width>851</width>
-        <height>221</height>
+        <height>201</height>
        </rect>
       </property>
       <property name="title">
@@ -1427,7 +1427,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>140</y>
+         <y>120</y>
          <width>161</width>
          <height>70</height>
         </rect>
@@ -1461,10 +1461,10 @@ li.checked::marker { content: &quot;\2612&quot;; }
       <widget class="QPushButton" name="InterpolationSolveButton_2">
        <property name="geometry">
         <rect>
-         <x>690</x>
+         <x>440</x>
          <y>130</y>
          <width>151</width>
-         <height>61</height>
+         <height>51</height>
         </rect>
        </property>
        <property name="cursor">
@@ -1481,8 +1481,8 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="geometry">
         <rect>
          <x>10</x>
-         <y>30</y>
-         <width>831</width>
+         <y>20</y>
+         <width>581</width>
          <height>91</height>
         </rect>
        </property>
@@ -1545,7 +1545,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="geometry">
         <rect>
          <x>180</x>
-         <y>140</y>
+         <y>120</y>
          <width>181</width>
          <height>70</height>
         </rect>
@@ -1568,6 +1568,22 @@ li.checked::marker { content: &quot;\2612&quot;; }
          </widget>
         </item>
        </layout>
+      </widget>
+      <widget class="QGroupBox" name="groupBox_22">
+       <property name="geometry">
+        <rect>
+         <x>610</x>
+         <y>10</y>
+         <width>231</width>
+         <height>171</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>Method</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignCenter</set>
+       </property>
       </widget>
      </widget>
      <widget class="QGroupBox" name="groupBox_18">
