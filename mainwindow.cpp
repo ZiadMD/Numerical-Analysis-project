@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     , RootSolver(RootMethods())
     , InterpolSolver(InterpolationMethods())
     , IntegrSolver(IntegrationMethods())
+    , EulerSolver(EulerMethods())
 
 {
     ui->setupUi(this);
@@ -535,16 +536,6 @@ void MainWindow::on_X_range_clicked(bool checked)
 }
 
 
-void MainWindow::on_X0Input_valueChanged(int arg1)
-{
-    if(ui->EulerMethodSelector->currentIndex() == 2){
-        if(ui->X_range->isChecked()){
-            ui->X_range_low->setValue(arg1);
-        }
-    }
-}
-
-
 void MainWindow::on_EulerSolveButton_clicked()
 {
     // 1. Validate inputs
@@ -560,9 +551,10 @@ void MainWindow::on_EulerSolveButton_clicked()
         return;
     }
 
-    const int steps = ui->EulerStepsInput->value();
-    if (steps == 0){
-
+    const double steps = ui->EulerStepsInput->value();
+    if (steps <= 0) {
+        QMessageBox::warning(this, "Invalid Steps", "Please enter a valid number of steps!");
+        return;
     }
 
     // 2. Parse equation
@@ -580,8 +572,147 @@ void MainWindow::on_EulerSolveButton_clicked()
         return;
     }
 
+    // 3. Get initial conditions
+    double x0 = ui->X0Input->value();
+    double y0 = ui->Y0Input->value();
+    double h = ui->EulerStepsInput->value(); // Step size will be calculated later
+    EulerResult result;
 
 
+    // 6. Display results in the UI
+    QTableWidget *table = ui->EulerResultsTable;
+    table->clearContents();
 
+
+    if (methodIndex == 1){
+
+        if (ui->X_eq_option->isChecked()) {
+            double x_ = ui->X_eq_input->value();
+            result = EulerSolver.Euler(fxy, x, y, x0, y0, x_, h);
+        } else if (ui->X_range->isChecked()) {
+            double xs = ui->X_range_low->value();
+            double xe = ui->X_range_high->value();
+            result = EulerSolver.Euler(fxy, x, y, x0, y0, {xs, xe}, h);
+
+        }
+        table->setColumnCount(3); // Two rows for X and Y
+        table->setRowCount(result.X.size());
+        table->setHorizontalHeaderLabels({"X", "Y", "h f(x, y)"});
+
+        for (int i = 0; i < result.X.size(); ++i) {
+            table->setItem(i, 0, new QTableWidgetItem(QString::number(result.X[i])));
+            table->setItem(i, 1, new QTableWidgetItem(QString::number(result.Y[i])));
+            if(i < result.X.size() - 1)
+            table->setItem(i, 2, new QTableWidgetItem(QString::number(h * result.Fxy[i])));
+        }
+
+        // 7. Show summary info
+        QString info;
+        ui->EulerInfo->selectAll();
+        ui->EulerInfo->cut();
+
+        info += "Method: Euler \n";
+        info += "Initial Condition: (x0, y0) = (" + QString::number(x0) + ", " + QString::number(y0) + ")\n";
+        info += "Step Size (h): " + QString::number(h, 'g', 10) + "\n";
+        ui->EulerInfo->setPlainText(info);
+
+
+    }
+
+    if (methodIndex == 2){
+
+        double x_;
+        if (ui->X_eq_option->isChecked()) {
+            x_ = ui->X_eq_input->value();
+        } else if (ui->X_range->isChecked()) {
+            x_ = ui->X_range_high->value();
+        }
+        result = EulerSolver.ModifiedEuler(fxy, x, y, x0, y0, x_, h);
+
+        table->setColumnCount(7); // Two rows for X and Y
+        table->setRowCount(result.X.size());
+        table->setHorizontalHeaderLabels({"X", "Yn", "f(x, y)", "Y(n)n+1", "Xn+1", "f(Xn+1, Y(n)n+1)", "Y(n+1)n+1"});
+
+        for (int i = 0; i < result.X.size(); ++i) {
+            table->setItem(i, 0, new QTableWidgetItem(QString::number(result.X[i])));
+            table->setItem(i, 1, new QTableWidgetItem(QString::number(result.Y[i])));
+            if(i < result.X.size() - 1){
+                table->setItem(i, 2, new QTableWidgetItem(QString::number(result.Fxy[i])));
+                table->setItem(i, 3, new QTableWidgetItem(QString::number(result.Y_P[i])));
+                table->setItem(i, 4, new QTableWidgetItem(QString::number(result.X[i+1])));
+                table->setItem(i, 5, new QTableWidgetItem(QString::number(result.Fxy_P[i])));
+                table->setItem(i, 6, new QTableWidgetItem(QString::number(result.Y[i+1])));
+            }
+        }
+
+        // 7. Show summary info
+        QString info;
+        ui->EulerInfo->selectAll();
+        ui->EulerInfo->cut();
+
+        info += "Method: Modified Euler \n";
+        info += "Initial Condition: (x0, y0) = (" + QString::number(x0) + ", " + QString::number(y0) + ")\n";
+        info += "Step Size (h): " + QString::number(h, 'g', 10) + "\n";
+        ui->EulerInfo->setPlainText(info);
+    }
+    /*
+    // 4. Check which radio button is selected
+    if (ui->X_eq_option->isChecked()) {
+        // Only x = x_end
+        double x_end = ui->X_range_high->value();
+
+        // 5. Create an instance of EulerMethods and solve
+        EulerMethods eulerSolver;
+        if (methodIndex == 1) { // Standard Euler
+            result = eulerSolver.Euler(fxy, x, y, x0, y0, x_end, h);
+        } else if (methodIndex == 2) { // Modified Euler
+            result = eulerSolver.ModifiedEuler(fxy, x, y, x0, y0, x_end, h);
+        }
+    } else if (ui->X_range->isChecked()) {
+        // x in range (x_start, x_end)
+        double x_start = ui->X_range_low->value();
+        double x_end = ui->X_range_high->value();
+
+        // 5. Create an instance of EulerMethods and solve
+        EulerMethods eulerSolver;
+        result = eulerSolver.Euler(fxy, x, y, x_start, y0, {x_start, x_end}, h);
+    }
+
+    // 6. Display results in the UI
+    QTableWidget *table = ui->EulerResultsTable;
+    table->clearContents();
+    table->setRowCount(2); // Two rows for X and Y
+    table->setColumnCount(result.X.size());
+
+    // Set headers
+    QStringList headers;
+    for (const auto &val : result.X) {
+        headers << QString::number(val);
+    }
+    table->setHorizontalHeaderLabels(headers);
+    table->setVerticalHeaderLabels({"X", "Y"});
+
+    // Fill the table with results
+    for (size_t i = 0; i < result.X.size(); ++i) {
+        table->setItem(0, i, new QTableWidgetItem(QString::number(result.X[i])));
+        table->setItem(1, i, new QTableWidgetItem(QString::number(result.Y[i])));
+    }
+
+    // 7. Show summary info
+    QString info;
+    info += "Method: " + ui->EulerMethodSelector->currentText() + "\n";
+    info += "Initial Condition: (x0, y0) = (" + QString::number(x0) + ", " + QString::number(y0) + ")\n";
+    info += "Step Size (h): " + QString::number(h, 'g', 10) + "\n";
+    ui->EulerInfo->setPlainText(info);
+    */
+}
+
+void MainWindow::on_X0Input_valueChanged(double arg1)
+{
+    if(ui->EulerMethodSelector->currentIndex() == 2){
+        if(ui->X_range->isChecked()){
+            ui->X_range_low->setValue(arg1);
+        }
+    }
 }
 

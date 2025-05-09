@@ -7,7 +7,8 @@
 #include "rootmethods.h"
 #include "interpolationmethods.h"
 #include "integrationmethods.h"
-
+#include "eulermethods.h"
+#include "curvefitting.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -50,9 +51,9 @@ private slots:
 
     void on_X_range_clicked(bool checked);
 
-    void on_X0Input_valueChanged(int arg1);
-
     void on_EulerSolveButton_clicked();
+
+    void on_X0Input_valueChanged(double arg1);
 
 private:
     Ui::MainWindow *ui;
@@ -60,5 +61,6 @@ private:
     RootMethods RootSolver;
     InterpolationMethods InterpolSolver;
     IntegrationMethods IntegrSolver;
+    EulerMethods EulerSolver;
 };
 #endif // MAINWINDOW_H
