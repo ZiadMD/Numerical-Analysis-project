@@ -46,6 +46,14 @@ private slots:
 
     void on_StepsInput_valueChanged(int steps);
 
+    void on_X_eq_option_clicked(bool checked);
+
+    void on_X_range_clicked(bool checked);
+
+    void on_X0Input_valueChanged(int arg1);
+
+    void on_EulerSolveButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 

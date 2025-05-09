@@ -93,7 +93,7 @@ void MainWindow::on_CurveFittingPageBtn_clicked()
  * @note Assumes `RootSolver` is a utility with methods:
  *       - make_full_parser(symbol): returns a parser for expressions in x
  *       - findBracket(fx, x, a, b): finds [a,b] where sign(f(a))≠sign(f(b))
- *       - bisectionMethod, secantMethod, newtonMethod → each returns a
+ *       - bisection, secant, newton → each returns a
  *         `RootReturn` struct containing:
  *           · double Root            – the computed root
  *           · map<char,vector<double>> RootVariables
@@ -139,15 +139,15 @@ void MainWindow::on_RootSolveButton_clicked()
     RootResult rootRes;
     switch (methodIndex) {
     case 1:  // Bisection
-        rootRes = RootSolver.bisectionMethod(fx, x, bracket, tol, 100);
+        rootRes = RootSolver.bisection(fx, x, bracket, tol, 100);
         break;
     case 2:  // Secant
-        rootRes = RootSolver.secantMethod(fx, x, bracket, tol, 100);
+        rootRes = RootSolver.secant(fx, x, bracket, tol, 100);
         break;
     case 3:  // Newton
         // Precompute derivative (for info display)
         diff(fx, x);
-        rootRes = RootSolver.newtonMethod(fx, x, bracket, tol, 100);
+        rootRes = RootSolver.newton(fx, x, bracket, tol, 100);
         break;
     default:
         return; // should never happen
@@ -211,194 +211,182 @@ void MainWindow::on_TablePoints_valueChanged(int points)
     ui->InterpolationTable->setColumnCount(points);
 }
 
+/**
+ * @brief Handles the “Solve Interpolation” button click.
+ *
+ * Reads the table of data points (xᵢ, yᵢ), the desired interpolation X, and
+ * the selected method (lagrange, Newton Forward, Newton Backward). Computes
+ * the interpolating polynomial, fills the answer table with intermediate
+ * values, and displays P(X) along with method info.
+ *
+ * @note Assumes `InterpolSolver` provides:
+ *   - lagrange(x, y, X, sym)
+ *   - newtonForward(x, y, X, sym)
+ *   - newtonBackward(x, y, X, sym)
+ *   returning an `InterpolationResult` struct containing:
+ *     · P.first  – symbolic polynomial expression
+ *     · P.second – numeric P(X) value
+ *     · L        – vector of (symbolic basis, numeric value) for lagrange
+ *     · D        – vector of forward/backward difference tables
+ *
+ * @throws Displays a QMessageBox warning if:
+ *         - No method is selected
+ *         - The data table is empty or mismatched
+ */
 void MainWindow::on_InterpolationSolveButton_clicked()
 {
-    int MethodIndex = ui->InterpolationMethodSelector->currentIndex();
-    int Points = ui->TablePoints->value();
-    if(MethodIndex == 0) {
-        QMessageBox::warning(this, "Empty Method", "Please Choose a Method first!");
+    // 1. Validate method selection
+    const int methodIndex = ui->InterpolationMethodSelector->currentIndex();
+    if (methodIndex == 0) {
+        QMessageBox::warning(this, "Empty Method", "Please choose an interpolation method!");
         return;
     }
 
+    // 2. Read points from the UI table
     QTableWidget *table = ui->InterpolationTable;
-    int colCount = table->columnCount();
-
-    std::vector<double> x, y;
-
-    for (int col = 0; col < colCount; ++col) {
-        bool ok1, ok2;
-        double a = table->item(0, col) ? table->item(0, col)->text().toDouble(&ok1) : 0;
-        double b = table->item(1, col) ? table->item(1, col)->text().toDouble(&ok2) : 0;
-
-        if (ok1 && ok2) {
-            x.push_back(a);
-            y.push_back(b);
+    const int cols = table->columnCount();
+    std::vector<double> x_vals, y_vals;
+    for (int c = 0; c < cols; ++c) {
+        bool okx = false, oky = false;
+        double xv = table->item(0, c) ? table->item(0, c)->text().toDouble(&okx) : 0.0;
+        double yv = table->item(1, c) ? table->item(1, c)->text().toDouble(&oky) : 0.0;
+        if (okx && oky) {
+            x_vals.push_back(xv);
+            y_vals.push_back(yv);
         }
     }
-
-    // 1. Empty Check
-    if (x.empty() || y.empty()) {
-        QMessageBox::warning(this, "Empty Data", "Please fill x and y values in the table.");
+    // 3. Check we got any data
+    if (x_vals.empty()) {
+        QMessageBox::warning(this, "Empty Data", "Please fill in x and y values!");
         return;
     }
 
-    // 2. Mismatch Check
-    if (x.size() < Points) {
-        QMessageBox::warning(this, "Mismatch", "x and y must have the same number of values.");
+    // 4. Ensure enough points
+    const int requiredPoints = ui->TablePoints->value();
+    if (static_cast<int>(x_vals.size()) < requiredPoints) {
+        QMessageBox::warning(this, "Mismatch", "Not enough (x,y) pairs for the chosen number of points.");
         return;
     }
 
-    // 3. Get min & max of x
-    auto [min_it, max_it] = std::minmax_element(x.begin(), x.end());
-    double x_min = *min_it;
-    double x_max = *max_it;
+    // 5. Compute x_min, x_max for info (optional range checks)
+    auto [minIt, maxIt] = std::minmax_element(x_vals.begin(), x_vals.end());
+    const double x_min = *minIt, x_max = *maxIt;
+    const double X = ui->InterpolationX->value();  // the point to evaluate
 
-    qDebug() << "x min:" << x_min << ", x max:" << x_max;
-
-    double solve_x = ui->InterpolationX->value();
-
-    // if(solve_x > x_max || solve_x < x_min){
-    //     QString Warning = QString::fromStdString("enter a valid number between " + to_string(x_min) + " and " + to_string(x_max) + " .");
-    //     QMessageBox::warning(this, "Out of range", Warning);
-    //     return;
-    // }
-
-    auto *ansTable = ui->InterpolAnsTable;
+    // 6. Prepare output table & symbol
+    QTableWidget *outTable = ui->InterpolAnsTable;
     symbol sym("x");
+    InterpolationResult result;
 
-    if(MethodIndex == 1){ // Lagranch
-        InterpolationResult Sol = InterpolSolver.lagrangeInterpolation(x,y,solve_x,sym);
+    // 7. Dispatch to the chosen interpolation method
+    switch (methodIndex) {
+    case 1:  // Lagrange
+        result = InterpolSolver.lagrange(x_vals, y_vals, X, sym);
 
-
-        ansTable->setColumnCount(3);
-        ansTable->setHorizontalHeaderLabels({"L", "L Expresion", "L value"});
-        ansTable->setRowCount(Sol.L.size());
-
-        for (int n = 0; n < Sol.L.size(); ++n) {
-            // simple preview L0 | L0_ex | L0_val
-            QString lName = QString("L%1").arg(n);
+        // Setup 3 columns: basis name, symbolic expr, numeric value
+        outTable->setColumnCount(3);
+        outTable->setHorizontalHeaderLabels({"Lᵢ", "Expression", "Value"});
+        outTable->setRowCount(result.L.size());
+        for (int i = 0; i < static_cast<int>(result.L.size()); ++i) {
+            const auto &basis = result.L[i];
+            // Lᵢ label
+            outTable->setItem(i, 0, new QTableWidgetItem(
+                                        QString("L%1").arg(i)));
+            // symbolic expression
             std::ostringstream oss;
-            oss << Sol.L[n].first.expand();
-            QString lExpr = QString::fromStdString(oss.str());
-            QString lVal = QString::number(Sol.L[n].second);
-
-            ansTable->setItem(n, 0, new QTableWidgetItem(lName));
-            ansTable->setItem(n, 1, new QTableWidgetItem(lExpr));
-            ansTable->setItem(n, 2, new QTableWidgetItem(lVal));
+            oss << basis.first.expand();
+            outTable->setItem(i, 1, new QTableWidgetItem(
+                                        QString::fromStdString(oss.str())));
+            // numeric value at X
+            outTable->setItem(i, 2, new QTableWidgetItem(
+                                        QString::number(basis.second)));
         }
+        break;
 
-        ui->Point->setText(QString::number(Sol.P.second));
+    case 2:  // Newton Forward
+        result = InterpolSolver.newtonForward(x_vals, y_vals, X, sym);
 
-        string info;
-        info += "Method: Lagranch.\n\n";
+        // Build difference table header: x, y, Δ¹, Δ², …
+        {
+            int levels = result.D.size();
+            QStringList hdr = {"x", "y"};
+            for (int lev = 1; lev < levels; ++lev)
+                hdr << QString("Δ%1").arg(lev);
+            outTable->setColumnCount(hdr.size());
+            outTable->setHorizontalHeaderLabels(hdr);
+            outTable->setRowCount(x_vals.size());
 
-        std::ostringstream oss;
-        oss << Sol.P.first.expand();
-        info += "P(x) = " + oss.str();
+            // Pack x, y, then each Δ-level
+            std::vector<std::vector<double>> tableData;
+            tableData.push_back(x_vals);
+            tableData.push_back(y_vals);
+            for (auto &Dlev : result.D) tableData.push_back(Dlev);
 
-        ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
-    }
-
-    if (MethodIndex == 2){
-        InterpolationResult Sol = InterpolSolver.newtonForwardInterpolation(x,y,solve_x,sym);
-
-        ansTable->setColumnCount(Sol.D.size()+1);
-        QStringList header = {"x", "y"};
-        for (int i = 1; i <= Sol.D.size()-1; ++i) {
-            header.push_back(QString::fromStdString("Δ" + to_string(i)));
-        }
-        ansTable->setHorizontalHeaderLabels(header);
-        ansTable->setRowCount(x.size());
-        vector<vector<double>> T;
-        T.push_back(x);
-
-        for (auto D : Sol.D) {
-            T.push_back(D);
-        }
-
-            for (int i = 0; i < T.size(); ++i) {
-                for (int n = 0; n < T[i].size(); ++n) {
-                    ansTable->setItem(n, i, new QTableWidgetItem(QString::number(T[i][n])));
+            // Fill the widget
+            for (int col = 0; col < static_cast<int>(tableData.size()); ++col) {
+                for (int row = 0; row < static_cast<int>(tableData[col].size()); ++row) {
+                    outTable->setItem(row, col, new QTableWidgetItem(
+                                                    QString::number(tableData[col][row])));
                 }
             }
-
-        // Print D matrix (Newton data)
-        string info = "Method: Newton Forward.\n\n";
-        double x_mid = (x_max + x_min)/2;
-
-        info += "Best Method for this point is ";
-        if (solve_x < x_mid) {
-            info += "Forward";
-        } else if (solve_x > x_mid) {
-            info += "Backward";
-        } else {
-            info += "Either Work";
         }
-        info += "\n\n";
-        ostringstream oss;
-        oss << "P(x) = " << Sol.P.first.expand();
-        info += oss.str() + "\n\n";
+        break;
 
+    case 3:  // Newton Backward
+        result = InterpolSolver.newtonBackward(x_vals, y_vals, X, sym);
 
+        // Similar to forward but align bottom-up
+        {
+            int levels = result.D.size();
+            QStringList hdr = {"x", "y"};
+            for (int lev = 1; lev < levels; ++lev)
+                hdr << QString("Δ%1").arg(lev);
+            outTable->setColumnCount(hdr.size());
+            outTable->setHorizontalHeaderLabels(hdr);
+            outTable->setRowCount(x_vals.size());
 
+            std::vector<std::vector<double>> tableData;
+            tableData.push_back(x_vals);
+            tableData.push_back(y_vals);
+            for (auto &Dlev : result.D) tableData.push_back(Dlev);
 
-        // Show in UI
-        ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
-
-        ui->Point->setText(QString::number(Sol.P.second));
-
-    }
-
-    if(MethodIndex == 3){
-        InterpolationResult Sol = InterpolSolver.newtonBackwardInterpolation(x,y,solve_x,sym);
-
-        ansTable->setColumnCount(Sol.D.size()+1);
-        QStringList header = {"x", "y"};
-        for (int i = 1; i <= Sol.D.size()-1; ++i) {
-            header.push_back(QString::fromStdString("Δ" + to_string(i)));
-        }
-        ansTable->setHorizontalHeaderLabels(header);
-        ansTable->setRowCount(x.size());
-        vector<vector<double>> T;
-        T.push_back(x);
-
-        for (auto D : Sol.D) {
-            T.push_back(D);
-        }
-
-        for (int i = 0; i < T.size(); ++i) {
-            for (int n = T[0].size() - T[i].size(); n < T[0].size(); ++n) {
-                ansTable->setItem(n, i, new QTableWidgetItem(QString::number(T[i][n])));
+            // For backward, rows shift so last entries align
+            int n = x_vals.size();
+            for (int col = 0; col < static_cast<int>(tableData.size()); ++col) {
+                int len = tableData[col].size();
+                for (int i = 0; i < len; ++i) {
+                    int row = n - len + i;
+                    outTable->setItem(row, col, new QTableWidgetItem(
+                                                    QString::number(tableData[col][i])));
+                }
             }
         }
+        break;
 
-        // Print D matrix (Newton data)
-        string info = "Method: Newton Backward.\n\n";
-        double x_mid = (x_max + x_min)/2;
-
-        info += "Best Method for this point is ";
-        if (solve_x < x_mid) {
-            info += "Forward";
-        } else if (solve_x > x_mid) {
-            info += "Backward";
-        } else {
-            info += "Either Work";
-        }
-        info += "\n\n";
-        ostringstream oss;
-        oss << "P(x) = " << Sol.P.first.expand();
-        info += oss.str() + "\n\n";
-
-
-
-
-        // Show in UI
-        ui->InterpolationInfo->insertPlainText(QString::fromStdString(info));
-
-        ui->Point->setText(QString::number(Sol.P.second));
+    default:
+        // Should never happen
+        return;
     }
 
+    // 8. Display the interpolation result and info
+    ui->Point->setText(QString::number(result.P.second));
 
+    std::ostringstream info;
+    if (methodIndex == 1)       info << "Method: Lagrange\n\n";
+    else if (methodIndex == 2)  info << "Method: Newton Forward\n\n";
+    else                         info << "Method: Newton Backward\n\n";
+
+    // Hint on best variant if using Newton
+    if (methodIndex > 1) {
+        double mid = 0.5*(x_min + x_max);
+        info << "Best around X=" << X << ": "
+             << ((X < mid) ? "Forward" : (X > mid) ? "Backward" : "Either")
+             << "\n\n";
+    }
+
+    // Show the polynomial itself
+    info << "P(x) = " << result.P.first.expand();
+    ui->InterpolationInfo->setPlainText(QString::fromStdString(info.str()));
 }
 
 ///////////////////////////////////////////////////////////////////////////  Integration  //////////////////////////////////////////////////////////////
@@ -518,8 +506,82 @@ void MainWindow::on_StepsInput_valueChanged(int steps)
     ui->IntMethodSelector->setCurrentIndex(0);
     if (auto *combo = ui->IntMethodSelector) {
         if (auto *item1 = comboItem(combo, 1)) item1->setEnabled(steps >= 1);
-        if (auto *item2 = comboItem(combo, 2)) item2->setEnabled(steps % 2 == 1);
+        if (auto *item2 = comboItem(combo, 2)) item2->setEnabled(steps % 2 == 0);
         if (auto *item3 = comboItem(combo, 3)) item3->setEnabled(steps % 3 == 0);
     }
+}
+
+///////////////////////////////////////////////////////////////////////////     Euler     ///////////////////////////////////////////////////////////////////
+
+void MainWindow::on_X_eq_option_clicked(bool checked)
+{
+    ui->X_eq_input->setEnabled(checked);
+    ui->X_range_low->setEnabled(!checked);
+    ui->X_range_high->setEnabled(!checked);
+}
+
+
+void MainWindow::on_X_range_clicked(bool checked)
+{
+    ui->X_eq_input->setEnabled(!checked);
+    if(ui->EulerMethodSelector->currentIndex() == 2){
+        ui->X_range_low->setEnabled(!checked);
+        ui->X_range_low->setValue(ui->X0Input->value());
+    }
+    else
+        ui->X_range_low->setEnabled(checked);
+
+    ui->X_range_high->setEnabled(checked);
+}
+
+
+void MainWindow::on_X0Input_valueChanged(int arg1)
+{
+    if(ui->EulerMethodSelector->currentIndex() == 2){
+        if(ui->X_range->isChecked()){
+            ui->X_range_low->setValue(arg1);
+        }
+    }
+}
+
+
+void MainWindow::on_EulerSolveButton_clicked()
+{
+    // 1. Validate inputs
+    const QString eqText = ui->EulerEQInput->text();
+    if (eqText.isEmpty()) {
+        QMessageBox::warning(this, "Empty Equation", "Please enter F(x)!");
+        return;
+    }
+
+    const int methodIndex = ui->EulerMethodSelector->currentIndex();
+    if (methodIndex == 0) {
+        QMessageBox::warning(this, "Empty Method", "Please choose a method!");
+        return;
+    }
+
+    const int steps = ui->EulerStepsInput->value();
+    if (steps == 0){
+
+    }
+
+    // 2. Parse equation
+    const std::string eqString = eqText.toStdString();
+    symbol x("x"), y("y");
+    parser p;
+    p.get_syms()["x"] = x;
+    p.get_syms()["y"] = y;
+    ex fxy;
+    try {
+        fxy = p(eqString);
+    }
+    catch (const std::exception&) {
+        QMessageBox::warning(this, "Unsupported", "Wrong or unsupported equation!");
+        return;
+    }
+
+
+
+
 }
 

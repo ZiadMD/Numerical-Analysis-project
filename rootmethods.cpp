@@ -14,6 +14,8 @@ bool RootMethods::matchDecimals(double a, double b, double tol)
     double factor = std::pow(10.0, tol);
     auto ai = std::llround(a * factor);
     auto bi = std::llround(b * factor);
+    // a = 2.4534, b = 2.4554
+    // a = 245, b = 245
     return ai == bi;
 }
 
@@ -67,7 +69,7 @@ double RootMethods::findInitialGuess(const pair<double, double> &bracket)
 
     return (bracket.first + bracket.second) / 2.0;
 }
-RootResult RootMethods::newtonMethod(
+RootResult RootMethods::newton(
     const ex &f_expr, symbol x, pair<double, double> &bracket, double tol, int maxIterations)
 {
     RootResult History;
@@ -99,7 +101,7 @@ RootResult RootMethods::newtonMethod(
     return History;
 }
 
-RootResult RootMethods::bisectionMethod(
+RootResult RootMethods::bisection(
     const ex &f_expr, symbol x, pair<double, double> &bracket, double tol, int maxIterations)
 {
     RootResult History;
@@ -163,7 +165,7 @@ RootResult RootMethods::bisectionMethod(
     return History;
 }
 
-RootResult RootMethods::secantMethod(
+RootResult RootMethods::secant(
     const ex &f_expr, symbol x, pair<double, double> &bracket, double tol, int maxIterations)
 {
     RootResult History;
