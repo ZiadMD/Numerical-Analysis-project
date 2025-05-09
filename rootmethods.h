@@ -31,22 +31,22 @@ public:
 
     pair<double, double> findBracket(const ex &f_expr, symbol x, double start, double end, double step = 1);
 
-    double findInitialGuess(const pair<double, double> &bracket);
+    double findInitialGuess(const pair<double, double> &bracket); // mid point
 
     // —————— ROOT-FINDERS ——————
-    RootResult newtonMethod(const ex &f_expr,
+    RootResult newton(const ex &f_expr,
                             symbol x,
                             pair<double, double> &bracket,
                             double tol,
                             int maxIterations = 100);
 
-    RootResult bisectionMethod(const ex &f_expr,
+    RootResult bisection(const ex &f_expr,
                                symbol x,
                                pair<double, double> &bracket,
                                double tol,
                                int maxIterations = 100);
 
-    RootResult secantMethod(const ex &f_expr,
+    RootResult secant(const ex &f_expr,
                             symbol x,
                             pair<double, double> &bracket,
                             double tol,

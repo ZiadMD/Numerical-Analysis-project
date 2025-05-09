@@ -1,6 +1,6 @@
 #include "interpolationmethods.h"
 
-InterpolationResult InterpolationMethods::lagrangeInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
+InterpolationResult InterpolationMethods::lagrange(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
     InterpolationResult History;
     for (int n = 0; n < x.size(); ++n) {
@@ -27,7 +27,7 @@ InterpolationResult InterpolationMethods::lagrangeInterpolation(const vector<dou
     return History;
 }
 
-InterpolationResult InterpolationMethods::newtonForwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
+InterpolationResult InterpolationMethods::newtonForward(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
     InterpolationResult History = NewtonTable(x,y);
 
@@ -49,7 +49,7 @@ InterpolationResult InterpolationMethods::newtonForwardInterpolation(const vecto
     return History;
 }
 
-InterpolationResult InterpolationMethods::newtonBackwardInterpolation(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
+InterpolationResult InterpolationMethods::newtonBackward(const vector<double> &x, const std::vector<double> &y, const double &x_, const symbol &sym)
 {
     InterpolationResult History = NewtonTable(x,y);
     ex P_ex;
