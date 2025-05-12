@@ -45,6 +45,9 @@ qt_add_executable(Numerical_Analysis
     eulermethods.cpp
     curvefitting.h curvefitting.cpp
 
+    expression_parser.h
+    expression_parser.cpp
+
 )
 
 # Link Qt and GiNaC
