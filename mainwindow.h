@@ -9,7 +9,6 @@
 #include "integrationmethods.h"
 #include "eulermethods.h"
 #include "curvefitting.h"
-#include "expression_parser.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
