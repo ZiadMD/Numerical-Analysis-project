@@ -1458,7 +1458,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
         </item>
        </layout>
       </widget>
-      <widget class="QPushButton" name="InterpolationSolveButton_2">
+      <widget class="QPushButton" name="CurveSolveButton">
        <property name="geometry">
         <rect>
          <x>470</x>
@@ -1477,7 +1477,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
         <bool>true</bool>
        </property>
       </widget>
-      <widget class="QTableWidget" name="InterpolationTable_2">
+      <widget class="QTableWidget" name="CurveInputTable">
        <property name="geometry">
         <rect>
          <x>10</x>
@@ -1712,7 +1712,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
-       <widget class="QTableWidget" name="tableWidget">
+       <widget class="QTableWidget" name="CurveResultsTable">
         <property name="geometry">
          <rect>
           <x>10</x>
@@ -1738,7 +1738,7 @@ li.checked::marker { content: &quot;\2612&quot;; }
        <property name="alignment">
         <set>Qt::AlignmentFlag::AlignCenter</set>
        </property>
-       <widget class="QTextEdit" name="textEdit_3">
+       <widget class="QTextEdit" name="CurveInfo">
         <property name="geometry">
          <rect>
           <x>10</x>

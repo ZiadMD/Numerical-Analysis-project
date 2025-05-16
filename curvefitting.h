@@ -24,11 +24,11 @@ struct CurveResult{
 class CurveFitting
 {
 public:
-    CurveResult linear(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y);
-    CurveResult quadric(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y);
-    CurveResult power1(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y);
-    CurveResult power2(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y);
-    CurveResult exponential(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y);
+    CurveResult linear(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys);
+    CurveResult quadric(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys);
+    CurveResult power1(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys);
+    CurveResult power2(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys);
+    CurveResult exponential(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys);
 
 
 

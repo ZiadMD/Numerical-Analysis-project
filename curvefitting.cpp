@@ -1,16 +1,31 @@
 #include "curvefitting.h"
 
-// CurveFitting::CurveFitting() {}
 
-CurveResult CurveFitting::linear(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y)
+CurveResult CurveFitting::linear(const ex &c_x,const ex &c_y,const vector<double> &x,const vector<double> &y,symbol xs,symbol ys)
 {
     CurveResult CR;
-    symbol xs("x"), ys("y");
     CR.sum_X = CR.sum_Y = CR.sum_XY = CR.sum_X2 = 0;
     int n = x.size();
+
     for (int i = 0; i < n; ++i) {
-        CR.X.push_back(ex_to<numeric>(c_x.subs(xs == x[i])).to_double());
-        CR.Y.push_back(ex_to<numeric>(c_y.subs(ys == y[i])).to_double());
+        double cx, cy;
+
+        try {
+            cx = ex_to<numeric>(c_x.subs(xs == x[i])).to_double();
+        } catch (...) {
+            cerr << "could not resolve cx\n";
+            return CR;
+        }
+
+        try {
+            cy = ex_to<numeric>(c_y.subs(ys == y[i])).to_double();
+        } catch (...) {
+            cerr << "could not resolve cy\n";
+            return CR;
+        }
+
+        CR.X.push_back(cx);
+        CR.Y.push_back(cy);
 
         CR.XY.push_back(CR.X[i] * CR.Y[i]);
         CR.X2.push_back(CR.X[i] * CR.X[i]);
@@ -21,16 +36,17 @@ CurveResult CurveFitting::linear(const ex &c_x, const ex &c_y, const vector<doub
         CR.sum_X2 += CR.X2[i];
     }
 
-    CR.a = (CR.sum_Y * CR.sum_X - n * CR.sum_XY) / CR.sum_X * CR.sum_X - n * CR.sum_X;
-    CR.b = (CR.sum_XY * CR.sum_X - CR.sum_Y * CR.sum_X2) / CR.sum_X * CR.sum_X - n * CR.sum_X;
+    // CR.a = (CR.sum_Y * CR.sum_X - n * CR.sum_XY) / CR.sum_X * CR.sum_X - n * CR.sum_X;
+    // CR.b = (CR.sum_XY * CR.sum_X - CR.sum_Y * CR.sum_X2) / CR.sum_X * CR.sum_X - n * CR.sum_X;
+    CR.a = (n * CR.sum_XY - CR.sum_X * CR.sum_Y)/(n * CR.sum_X2 - (CR.sum_X * CR.sum_X));
+    CR.b = (CR.sum_Y - CR.a * CR.sum_X)/(n);
 
     return CR;
 }
 
-CurveResult CurveFitting::quadric(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y)
+CurveResult CurveFitting::quadric(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys)
 {
     CurveResult CR;
-    symbol xs("x"), ys("y");
     CR.sum_X = CR.sum_Y = CR.sum_XY = CR.sum_X2 = CR.sum_X2Y= CR.sum_X3 = CR.sum_X4= 0;
     int n = x.size();
 
@@ -86,9 +102,10 @@ CurveResult CurveFitting::quadric(const ex &c_x, const ex &c_y, const vector<dou
     return CR;
 }
 
-CurveResult CurveFitting::power1(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y)
+CurveResult CurveFitting::power1(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys)
 {
-    CurveResult CR = linear(GiNaC::log(c_x), GiNaC::log(c_y), x, y);
+    CurveResult CR = linear(GiNaC::log(c_x), GiNaC::log(c_y), x, y, xs, ys);
+    std::swap(CR.a, CR.b);
 
     CR.A = CR.a;
     CR.a = std::exp(CR.A);
@@ -96,9 +113,10 @@ CurveResult CurveFitting::power1(const ex &c_x, const ex &c_y, const vector<doub
     return CR;
 }
 
-CurveResult CurveFitting::power2(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y)
+CurveResult CurveFitting::power2(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys)
 {
-    CurveResult CR = linear(c_x, GiNaC::log(c_y), x, y);
+    CurveResult CR = linear(c_x, GiNaC::log(c_y), x, y, xs, ys);
+
 
     CR.A = CR.a;
     CR.a = std::exp(CR.A);
@@ -109,9 +127,11 @@ CurveResult CurveFitting::power2(const ex &c_x, const ex &c_y, const vector<doub
     return CR;
 }
 
-CurveResult CurveFitting::exponential(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y)
+CurveResult CurveFitting::exponential(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys)
 {
-    CurveResult CR = linear(c_x, GiNaC::log(c_y), x, y);
+    CurveResult CR = linear(c_x, GiNaC::log(c_y), x, y, xs, ys);
+
+    std::swap(CR.a, CR.b);
 
     CR.A = CR.a;
     CR.a = std::exp(CR.A);

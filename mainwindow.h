@@ -60,6 +60,10 @@ private slots:
 
     void on_CurveCustomYCheck_clicked(bool checked);
 
+    void on_CurveTablePoints_valueChanged(int arg1);
+
+    void on_CurveSolveButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -67,5 +71,6 @@ private:
     InterpolationMethods InterpolSolver;
     IntegrationMethods IntegrSolver;
     EulerMethods EulerSolver;
+    CurveFitting CurveSolver;
 };
 #endif // MAINWINDOW_H
