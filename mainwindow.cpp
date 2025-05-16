@@ -914,8 +914,8 @@ void MainWindow::on_CurveSolveButton_clicked()
             restable->setItem(sumRow, col, new QTableWidgetItem(QString::number(sums[col - 2])));
         }
     }
-    info << "------------------------------------------------------------\n\n";
-    info << "Variables:\n";
+    info << "---------------------------------------------------\n\n";
+    info << "Variables:\n\n";
     info << "∑X = " << sums[0] << endl;
     info << "∑Y = " << sums[1] << endl;
     info << "∑XY = " << sums[2] << endl;
@@ -925,16 +925,35 @@ void MainWindow::on_CurveSolveButton_clicked()
         info << "∑X³ = " << sums[5] << endl;
         info << "∑X⁴ = " << sums[6] << endl;
     }
-    info << "a = " << result.a << endl;
+    info << "\na = " << result.a << endl;
     info << "b = " << result.b << endl;
     if (isMethod2){
         info << "c = " << result.c << endl;
     }
-
+    ex form;
+    if (methodIndex == 1){
+        form = c_y == result.a *(c_x) + result.b;
+    } else if (methodIndex == 2) {
+        form = c_y == result.a *pow(c_x, 2) + result.b * (c_x) + result.c;
+    } else if (methodIndex == 3){
+        form = c_y == result.a * exp(result.b * c_x);
+    } else if (methodIndex == 4){
+        form = c_y == result.a * pow(c_x, result.b) ;
+    }else if (methodIndex == 5){
+        form = c_y == result.b * pow(result.a,c_x);
+    }
+    info << "---------------------------------------------------\n\n";
+    info << endl << "Final Formula:\n\n" << form.expand() << endl;
 
     ui->CurveInfo->setPlainText(QString::fromStdString(info.str()));
 
 
+
+}
+
+
+void MainWindow::on_CurveCustomXCheck_2_clicked(bool checked)
+{
 
 }
 
