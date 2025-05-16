@@ -952,8 +952,3 @@ void MainWindow::on_CurveSolveButton_clicked()
 }
 
 
-void MainWindow::on_CurveCustomXCheck_2_clicked(bool checked)
-{
-
-}
-
