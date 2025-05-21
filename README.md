@@ -525,7 +525,8 @@ $$\begin{align*}
 Fits data to the model $y = b a^x$ by linearizing to $\ln(y) = \ln(b) + x\ln(a)$. 
 
 Let:
-$Y = \ln(y)$, $X = x$, and $A = \ln(a)$,  $B = ln(b)$,  then solve:
+$Y = \ln(y)$, $X = x$, and $A = \ln(a)$,  $B = ln(b)$,  then solve:  
+
 $$\begin{align*}
 \sum Y &= nB + A\sum X \\
 \sum XY &= B\sum X + A\sum X^2
