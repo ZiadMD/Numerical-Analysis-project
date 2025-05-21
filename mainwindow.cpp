@@ -121,6 +121,7 @@ void MainWindow::on_RootSolveButton_clicked()
 
     // 2. Parse equation
     const std::string eqString = eqText.toStdString();
+
     symbol x("x");
     parser p = RootSolver.make_full_parser(x);
     ex fx;
@@ -501,7 +502,6 @@ void MainWindow::on_IntSolveButton_clicked()
     ui->IntInfo->setPlainText(info);
 }
 
-
 void MainWindow::on_StepsInput_valueChanged(int steps)
 {
     ui->IntMethodSelector->setCurrentIndex(0);
@@ -521,7 +521,6 @@ void MainWindow::on_X_eq_option_clicked(bool checked)
     ui->X_range_high->setEnabled(!checked);
 }
 
-
 void MainWindow::on_X_range_clicked(bool checked)
 {
     ui->X_eq_input->setEnabled(!checked);
@@ -534,7 +533,6 @@ void MainWindow::on_X_range_clicked(bool checked)
 
     ui->X_range_high->setEnabled(checked);
 }
-
 
 void MainWindow::on_EulerSolveButton_clicked()
 {
@@ -655,56 +653,7 @@ void MainWindow::on_EulerSolveButton_clicked()
         info += "Step Size (h): " + QString::number(h, 'g', 10) + "\n";
         ui->EulerInfo->setPlainText(info);
     }
-    /*
-    // 4. Check which radio button is selected
-    if (ui->X_eq_option->isChecked()) {
-        // Only x = x_end
-        double x_end = ui->X_range_high->value();
 
-        // 5. Create an instance of EulerMethods and solve
-        EulerMethods eulerSolver;
-        if (methodIndex == 1) { // Standard Euler
-            result = eulerSolver.Euler(fxy, x, y, x0, y0, x_end, h);
-        } else if (methodIndex == 2) { // Modified Euler
-            result = eulerSolver.ModifiedEuler(fxy, x, y, x0, y0, x_end, h);
-        }
-    } else if (ui->X_range->isChecked()) {
-        // x in range (x_start, x_end)
-        double x_start = ui->X_range_low->value();
-        double x_end = ui->X_range_high->value();
-
-        // 5. Create an instance of EulerMethods and solve
-        EulerMethods eulerSolver;
-        result = eulerSolver.Euler(fxy, x, y, x_start, y0, {x_start, x_end}, h);
-    }
-
-    // 6. Display results in the UI
-    QTableWidget *table = ui->EulerResultsTable;
-    table->clearContents();
-    table->setRowCount(2); // Two rows for X and Y
-    table->setColumnCount(result.X.size());
-
-    // Set headers
-    QStringList headers;
-    for (const auto &val : result.X) {
-        headers << QString::number(val);
-    }
-    table->setHorizontalHeaderLabels(headers);
-    table->setVerticalHeaderLabels({"X", "Y"});
-
-    // Fill the table with results
-    for (size_t i = 0; i < result.X.size(); ++i) {
-        table->setItem(0, i, new QTableWidgetItem(QString::number(result.X[i])));
-        table->setItem(1, i, new QTableWidgetItem(QString::number(result.Y[i])));
-    }
-
-    // 7. Show summary info
-    QString info;
-    info += "Method: " + ui->EulerMethodSelector->currentText() + "\n";
-    info += "Initial Condition: (x0, y0) = (" + QString::number(x0) + ", " + QString::number(y0) + ")\n";
-    info += "Step Size (h): " + QString::number(h, 'g', 10) + "\n";
-    ui->EulerInfo->setPlainText(info);
-    */
 }
 
 void MainWindow::on_X0Input_valueChanged(double arg1)
@@ -715,4 +664,291 @@ void MainWindow::on_X0Input_valueChanged(double arg1)
         }
     }
 }
+
+///////////////////////////////////////////////////////////////////////////     Curve     ///////////////////////////////////////////////////////////////////
+
+
+void MainWindow::on_CurveMethodSelector_currentIndexChanged(int index)
+{
+    QString example;
+    switch (index) {
+    case 0:
+        example = "";
+        break;
+    case 1:
+        example = "y = ax + b";
+        break;
+    case 2:
+        example = "y = ax^2 + bx + c";
+        break;
+    case 3:
+        example = "y = a e^(bx)";
+        break;
+    case 4:
+        example = "y = a x^b";
+        break;
+    case 5:
+        example = "y = b a^x";
+        break;
+    default:
+        break;
+    }
+
+    ui->CurveExampleLabel->setText(example);
+}
+
+
+void MainWindow::on_CurveCustomXCheck_clicked(bool checked)
+{
+    ui->CurveCustomX->setEnabled(checked);
+    if(!checked){
+        ui->CurveCustomX->clear();
+    }
+}
+
+
+void MainWindow::on_CurveCustomYCheck_clicked(bool checked)
+{
+    ui->CurveCustomY->setEnabled(checked);
+    if(!checked){
+        ui->CurveCustomY->clear();
+    }
+
+}
+
+
+void MainWindow::on_CurveTablePoints_valueChanged(int arg1)
+{
+    ui->CurveInputTable->setColumnCount(arg1);
+}
+
+
+void MainWindow::on_CurveSolveButton_clicked()
+{
+        const int methodIndex = ui->CurveMethodSelector->currentIndex();
+    if (methodIndex == 0) {
+        QMessageBox::warning(this, "Empty Method", "Please choose an interpolation method!");
+        return;
+    }
+    qDebug() << "1 con pass\n";
+
+    QTableWidget *table = ui->CurveInputTable;
+    const int cols = table->columnCount();
+    std::vector<double> x_vals, y_vals;
+    for (int c = 0; c < cols; ++c) {
+        bool okx = false, oky = false;
+        double xv = table->item(0, c) ? table->item(0, c)->text().toDouble(&okx) : 0.0;
+        double yv = table->item(1, c) ? table->item(1, c)->text().toDouble(&oky) : 0.0;
+        if (okx && oky) {
+            x_vals.push_back(xv);
+            y_vals.push_back(yv);
+        }
+    }
+    qDebug() << "Table has been read!\n";
+    qDebug() << "x vals: "<< x_vals << "\n";
+    qDebug() << "y vals: " << y_vals << "\n";
+
+    if (x_vals.empty()) {
+        QMessageBox::warning(this, "Empty Data", "Please fill in x and y values!");
+        return;
+    }
+
+    const int requiredPoints = ui->CurveTablePoints->value();
+    if (static_cast<int>(x_vals.size()) < requiredPoints) {
+        QMessageBox::warning(this, "Mismatch", "Not enough (x,y) pairs for the chosen number of points.");
+        return;
+    }
+    qDebug() << "Points is valid!\n";
+
+    QString CustomX, CustomY;
+
+    if (ui->CurveCustomXCheck->isChecked()) {
+        qDebug() << "Custom X enabled\n";
+        QString inputX = ui->CurveCustomX->text().trimmed();
+        if (inputX.isEmpty()) {
+            QMessageBox::warning(this, "Input Error", "Custom X value cannot be empty.");
+        } else {
+            CustomX = inputX;
+            qDebug() << "Custom X found!\n";
+        }
+    } else {
+        qDebug() << "Custom X disabled\n";
+        CustomX = "x";
+    }
+    qDebug() << "Custom X done!\n";
+
+    if (ui->CurveCustomYCheck->isChecked()) {
+        QString inputY = ui->CurveCustomY->text().trimmed();
+        if (inputY.isEmpty()) {
+            QMessageBox::warning(this, "Input Error", "Custom Y value cannot be empty.");
+        } else {
+            CustomY = inputY;
+        }
+    } else {
+        CustomY = "y";
+    }
+    qDebug() << "Custom Y done!\n";
+
+    ex c_x, c_y;
+    symbol x("x"), y("y");
+    parser px, py;
+    px.get_syms()["x"] = x;
+    py.get_syms()["y"] = y;
+
+    try{
+        c_x = px(CustomX.toStdString());
+    }
+    catch (const std::exception& e) {
+        QMessageBox::warning(this, "Unsupported", "Wrong or unsupported equation in X   ");
+        return;
+    }
+
+    try{
+        c_y = py(CustomY.toStdString());
+    }
+    catch (const std::exception& e) {
+        QMessageBox::warning(this, "Unsupported", "Wrong or unsupported equation in Y");
+        return;
+
+    }
+    qDebug() << "exp Done for X, Y!\n";
+
+    ostringstream info;
+
+
+    // 5. Solve the equation
+    CurveResult result;
+    if (methodIndex == 1) // y = ax + b
+    {
+        result = CurveSolver.linear(c_x, c_y, x_vals, y_vals, x, y);
+        info << "Model: y = a·x + b\n";
+        info << "Normal equations:\n";
+        info << "  ∑y = a∑x + n·b\n";
+        info << "  ∑x·y = a∑x² + b∑x\n";
+    }
+    else if (methodIndex == 2) // y = ax^2 + bx + c
+    {
+        result = CurveSolver.quadric(c_x, c_y, x_vals, y_vals, x, y);
+        info << "Model: y = a·x² + b·x + c\n";
+        info << "Normal equations:\n";
+        info << "  ∑y = a∑x² + b∑x + n·c\n";
+        info << "  ∑x·y = a∑x³ + b∑x² + c∑x\n";
+        info << "  ∑x²·y = a∑x⁴ + b∑x³ + c∑x²\n";
+    }
+    else if (methodIndex == 3) // y = a e^(bx)
+    {
+        result = CurveSolver.exponential(c_x, c_y, x_vals, y_vals, x, y);
+        info << "Linearized model: ln(y) = ln(a) + b·x\n";
+        info << "Linearized model: Y = A + b·x\n";
+        info << "Normal equations:\n";
+        info << "  ∑ln(y) = n·ln(a) + b∑x\n";
+        info << "  ∑x·ln(y) = ln(a)∑x + b∑x²\n";
+    }
+    else if (methodIndex == 4) // y = a x^b
+    {
+        result = CurveSolver.power1(c_x, c_y, x_vals, y_vals, x, y);
+        info << "Linearized model: ln(y) = ln(a) + b·ln(x)\n";
+        info << "Linearized model: Y = A + b·X\n";
+        info << "Normal equations:\n";
+        info << "  ∑ln(y) = n·ln(a) + b∑ln(x)\n";
+        info << "  ∑ln(x)·ln(y) = ln(a)∑ln(x) + b∑[ln(x)]²\n";
+    }
+    else if (methodIndex == 5) // y = b a^x
+    {
+        result = CurveSolver.power2(c_x, c_y, x_vals, y_vals, x, y);
+        info << "Linearized model: ln(y) = ln(b) + x·ln(a)\n";
+        info << "Linearized model: Y = B + x·A\n";
+        info << "Normal equations:\n";
+        info << "  ∑ln(y) = n·ln(b) + ln(a)∑x\n";
+        info << "  ∑x·ln(y) = ln(b)∑x + ln(a)∑x²\n";
+    }
+
+
+    // 6. Display the result
+    auto *restable = ui->CurveResultsTable;
+    restable->clear(); // Clears all items and headers [[4]]
+
+    // Configure table based on methodIndex
+    const int dataRowCount = result.X.size();
+    const int totalRowCount = dataRowCount + 1; // +1 for sum row
+    const bool isMethod2 = (methodIndex == 2);
+
+    // Set up columns
+    if (isMethod2) {
+        restable->setColumnCount(9);
+        restable->setHorizontalHeaderLabels({"x", "y", "X", "Y", "XY", "X²", "X²Y", "X³", "X⁴"});
+    } else {
+        restable->setColumnCount(6);
+        restable->setHorizontalHeaderLabels({"x", "y", "X", "Y", "XY", "X²"});
+    }
+
+    restable->setRowCount(totalRowCount);
+
+    // Populate data rows
+    for (int i = 0; i < dataRowCount; ++i) {
+        // Common columns for all methods
+        restable->setItem(i, 0, new QTableWidgetItem(QString::number(x_vals[i])));
+        restable->setItem(i, 1, new QTableWidgetItem(QString::number(y_vals[i])));
+        restable->setItem(i, 2, new QTableWidgetItem(QString::number(result.X[i])));
+        restable->setItem(i, 3, new QTableWidgetItem(QString::number(result.Y[i])));
+        restable->setItem(i, 4, new QTableWidgetItem(QString::number(result.XY[i])));
+        restable->setItem(i, 5, new QTableWidgetItem(QString::number(result.X2[i])));
+
+        // Additional columns for method 2
+        if (isMethod2) {
+            restable->setItem(i, 6, new QTableWidgetItem(QString::number(result.X2Y[i])));
+            restable->setItem(i, 7, new QTableWidgetItem(QString::number(result.X3[i])));
+            restable->setItem(i, 8, new QTableWidgetItem(QString::number(result.X4[i])));
+        }
+    }
+
+    // Set sum row values
+    const int sumRow = dataRowCount;
+    std::vector<double> sums = {
+        result.sum_X, result.sum_Y, result.sum_XY,
+        result.sum_X2, result.sum_X2Y, result.sum_X3, result.sum_X4
+    };
+
+    for (int col = 2; col < restable->columnCount(); ++col) {
+        if (col - 2 < sums.size()) {
+            restable->setItem(sumRow, col, new QTableWidgetItem(QString::number(sums[col - 2])));
+        }
+    }
+    info << "---------------------------------------------------\n\n";
+    info << "Variables:\n\n";
+    info << "∑X = " << sums[0] << endl;
+    info << "∑Y = " << sums[1] << endl;
+    info << "∑XY = " << sums[2] << endl;
+    info << "∑X² = " << sums[3] << endl;
+    if(isMethod2){
+        info << "∑X²Y = " << sums[4] << endl;
+        info << "∑X³ = " << sums[5] << endl;
+        info << "∑X⁴ = " << sums[6] << endl;
+    }
+    info << "\na = " << result.a << endl;
+    info << "b = " << result.b << endl;
+    if (isMethod2){
+        info << "c = " << result.c << endl;
+    }
+    ex form;
+    if (methodIndex == 1){
+        form = c_y == result.a *(c_x) + result.b;
+    } else if (methodIndex == 2) {
+        form = c_y == result.a *pow(c_x, 2) + result.b * (c_x) + result.c;
+    } else if (methodIndex == 3){
+        form = c_y == result.a * exp(result.b * c_x);
+    } else if (methodIndex == 4){
+        form = c_y == result.a * pow(c_x, result.b) ;
+    }else if (methodIndex == 5){
+        form = c_y == result.b * pow(result.a,c_x);
+    }
+    info << "---------------------------------------------------\n\n";
+    info << endl << "Final Formula:\n\n" << form.expand() << endl;
+
+    ui->CurveInfo->setPlainText(QString::fromStdString(info.str()));
+
+
+
+}
+
 

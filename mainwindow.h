@@ -10,7 +10,6 @@
 #include "eulermethods.h"
 #include "curvefitting.h"
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -55,6 +54,16 @@ private slots:
 
     void on_X0Input_valueChanged(double arg1);
 
+    void on_CurveMethodSelector_currentIndexChanged(int index);
+
+    void on_CurveCustomXCheck_clicked(bool checked);
+
+    void on_CurveCustomYCheck_clicked(bool checked);
+
+    void on_CurveTablePoints_valueChanged(int arg1);
+
+    void on_CurveSolveButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -62,5 +71,6 @@ private:
     InterpolationMethods InterpolSolver;
     IntegrationMethods IntegrSolver;
     EulerMethods EulerSolver;
+    CurveFitting CurveSolver;
 };
 #endif // MAINWINDOW_H
