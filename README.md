@@ -366,10 +366,169 @@ IntegrationResult IntegrationMethods::simpsonThreeEighth(const ex &f_expr, symbo
 
 ---
 
-## 📝 TODO
+# Euler Methods
 
-- [X] Add integration implementation documentation.
-- [ ] Add Euler  implementation documentation.
-- [ ] Add Curve fitting implementation documentation.
-- [ ]  Add screenshots or example usage scenarios.
+This section explains the algorithms and implementations of numerical methods for solving ordinary differential equations (ODEs):
+
+## 1. Euler's Method
+
+### Concept
+
+For a first-order ODE of the form $\frac{dy}{dx} = f(x,y)$ with initial condition $y(x_0) = y_0$, Euler's method approximates the solution using:
+
+$$y_{n+1} = y_n + h \cdot f(x_n, y_n)$$
+
+where $h$ is the step size.
+
+```cpp
+EulerResult EulerMethods::Euler(const ex &fxy, symbol x, symbol y, double x0, double y0, double x_, double h)
+{
+    EulerResult R;
+    R.Y.push_back(y0);
+    int steps = (x_ - x0) / h + 1;
+    for (int i = 0; i < steps; i++) {
+        R.X.push_back(x0 + i*h);
+    }
+
+    for (int i = 1; i < size; ++i) {
+        double Fxy_v = eval_xy(fxy, x, y, R.X[i-1], R.Y[i-1]);
+        R.Fxy.push_back(Fxy_v);
+        R.Y.push_back(R.Y[i-1] + (h * Fxy_v));
+    }
+    return R;
+}
+```
+
+## 2. Modified Euler's Method (Heun's Method)
+
+### Concept
+ $$y_{n+1}^* = y_n + h \cdot f(x_n, y_n)$$ $$y_{n+1} = y_n + \frac{h}{2}[f(x_n, y_n) + f(x_{n+1}, y_{n+1}^*)]$$
+```cpp
+EulerResult EulerMethods::ModifiedEuler(const ex &fxy, symbol x, symbol y, double x0, double y0, double x_, double h)
+{
+    EulerResult R;
+    R.Y.push_back(y0);
+
+    for (double i = x0; i <= x_; i += h) {
+        R.X.push_back(i);
+    }
+
+    for (int i = 1; i < size; ++i) {
+        // Predictor
+        double Fxy_v = eval_xy(fxy, x, y, R.X[i-1], R.Y.back());
+        double yn_n1 = R.Y.back() + (h * Fxy_v);
+        
+        // Corrector
+        double Fxyn1_v = eval_xy(fxy, x, y, R.X[i], yn_n1);
+        double yn1_n1 = R.Y.back() + (h/2) * (Fxy_v + Fxyn1_v);
+
+        R.Fxy.push_back(Fxy_v);
+        R.Fxy_P.push_back(Fxyn1_v);
+        R.Y_P.push_back(yn_n1);
+        R.Y.push_back(yn1_n1);
+    }
+    return R;
+}
+```
+
+---
+
+# Curve Fitting Methods
+
+This section explains the algorithms and implementations of curve fitting techniques:
+
+## 1. Linear Regression
+
+### Concept
+
+Fits data to the model $y = ax + b$ using the method of least squares. The normal equations are:
+
+$$\begin{align*}
+\sum y &= a\sum x + nb \\
+\sum xy &= a\sum x^2 + b\sum x
+\end{align*}$$
+
+```cpp
+CurveResult CurveFitting::linear(const ex &c_x,const ex &c_y,const vector<double> &x,const vector<double> &y,symbol xs,symbol ys)
+{
+    Matrix A = Matrix({{CR.sum_X, double(n)},
+                       {CR.sum_X2, CR.sum_X}});
+    vector<double> Sy = {CR.sum_Y}, Sxy = {CR.sum_XY};
+    Matrix B = Matrix({Sy,
+                       Sxy});
+
+    Matrix A_inv = A.inverse();
+    Matrix X = A_inv * B;
+
+    CR.a = X(0,0);
+    CR.b = X(1,0);
+    return CR;
+}
+```
+
+## 2. Quadratic Regression
+
+### Concept
+
+Fits data to the model $y = ax^2 + bx + c$ using the method of least squares. The normal equations are:
+
+$$\begin{align*}
+\sum y &= a\sum x^2 + b\sum x + nc \\
+\sum xy &= a\sum x^3 + b\sum x^2 + c\sum x \\
+\sum x^2y &= a\sum x^4 + b\sum x^3 + c\sum x^2
+\end{align*}$$
+
+```cpp
+CurveResult CurveFitting::quadric(const ex &c_x, const ex &c_y, const vector<double> &x, const vector<double> &y, symbol xs, symbol ys)
+{
+    Matrix A = Matrix({{CR.sum_X2, CR.sum_X, double(n)},
+                      {CR.sum_X3, CR.sum_X2, CR.sum_X},
+                      {CR.sum_X4, CR.sum_X3, CR.sum_X2}});
+
+    Matrix B = Matrix({{CR.sum_Y},
+                      {CR.sum_XY},
+                      {CR.sum_X2Y}});
+
+    Matrix X = A.inverse() * B;
+    CR.a = X(0,0);
+    CR.b = X(1,0);
+    CR.c = X(2,0);
+    return CR;
+}
+```
+
+## 3. Exponential Regression
+
+### Concept
+
+Fits data to the model $y = ae^{bx}$ by linearizing to $\ln(y) = \ln(a) + bx$. Let $Y = \ln(y)$ and $A = \ln(a)$, then solve:
+
+$$\begin{align*}
+\sum Y &= nA + b\sum x \\
+\sum xY &= A\sum x + b\sum x^2
+\end{align*}$$
+
+## 4. Power Regression
+
+### Concept
+
+Fits data to the model $y = ax^b$ by linearizing to $\ln(y) = \ln(a) + b\ln(x)$.
+Let:
+$Y = \ln(y)$, $X = \ln(x)$, and $A = \ln(a)$, then solve:
+
+$$\begin{align*}
+\sum Y &= nA + b\sum X \\
+\sum XY &= A\sum X + b\sum X^2
+\end{align*}$$
+
+
+Fits data to the model $y = b a^x$ by linearizing to $\ln(y) = \ln(b) + x\ln(a)$. 
+
+Let:
+$Y = \ln(y)$, $X = x$, and $A = \ln(a)$,  $B = ln(b)$,  then solve:
+$$\begin{align*}
+\sum Y &= nB + A\sum X \\
+\sum XY &= B\sum X + A\sum X^2
+\end{align*}$$
+
 
